@@ -1,0 +1,42 @@
+# Python bytecode, builds, and package metadata
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# Virtual environments and local environment variables
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.*
+!.env.example
+
+# Test, type-check, and lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Notebook and editor artifacts
+.ipynb_checkpoints/
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local secrets and credentials
+*.pem
+*.key
+id_rsa
+id_ed25519
+credentials.json
+secrets.json
