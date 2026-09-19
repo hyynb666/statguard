@@ -7,11 +7,11 @@ evidence and data lineage. Submitted code must never be imported or executed.
 
 ## Current status
 
-Milestone 1, Issue 1 establishes packaging, the CLI entry point, public data/rule
-interfaces, and development tooling. Version `0.1.0.dev0` supports `--help` and
-`--version`. Parsing, `statguard check`, text/JSON scan reports, and all statistical
-detection rules are **not implemented yet**. No scan results or statistical
-guarantees are available in this foundation release.
+Milestone 1 now includes packaging, the help/version CLI, public data/rule
+interfaces, and a Python AST parser API for source strings and .py files.
+Version `0.1.0.dev0` remains a development version. Notebook parsing,
+`statguard check`, text/JSON scan reports, and statistical detection rules are
+**not implemented yet**. Parsing reports syntax, not statistical validity.
 
 ## Install from this repository
 
@@ -50,7 +50,7 @@ src/statguard/
     findings.py          # immutable Finding and Evidence categories
     rule.py              # Rule[ContextT] protocol
     registry.py          # explicit registration and deterministic iteration
-  parsers/               # reserved for Issue 2
+  parsers/               # PythonSourceParser, syntax records and explicit errors
   rules/                 # no built-in rules yet
   reporters/             # reserved for text/JSON rendering
 tests/
@@ -60,14 +60,39 @@ tests/
 minimal interfaces. Findings carry a path, one-based line/column and optional
 one-based code-cell index, observed message, risk, recommendation, and evidence
 category. Evidence is not severity, and an undetermined observation is not a
-confirmed violation. The future parser must convert AST locations to this public
-coordinate convention and disclose notebook document-order limitations.
+confirmed violation. The Python parser converts AST byte offsets to one-based character columns.
+A future notebook parser must disclose document-order limitations.
 
 Rules provide stable `rule_id` and `description` metadata plus
 `analyze(context) -> Iterable[Finding]`. Context is generic for now; no analysis
 context or engine is implemented. The registry rejects duplicate IDs, supports
 lookup, and iterates by ID without executing rules or importing plugins. These
 interfaces remain provisional during pre-alpha development.
+
+## Python parser API
+
+```python
+from statguard.parsers import PythonSourceParser, SourceParseError
+
+parser = PythonSourceParser()
+unit = parser.parse_source("import library as lib\nx = lib.run(data)\n", path="example.py")
+print(unit.calls[0].name)  # lib.run (syntax only, not a resolved API)
+print(unit.calls[0].location.column)  # 5
+
+try:
+    unit = parser.parse_file("analysis.py")
+except SourceParseError as error:
+    print(error.code, error.path, error.line, error.column, error.message)
+```
+
+The result retains source text, the original AST, and indexes of imports (including
+aliases), Assign/AnnAssign statements, calls/arguments, and function definitions.
+Dynamic callees such as `factory().fit()` have `name=None` and `is_unknown=True`;
+the full expression remains available in the AST. Runtime values are never
+evaluated, and imports are not resolved or loaded.
+
+See [the parser API and limitations](docs/python-parser.md) for location semantics,
+encoding support, error handling, and the boundary between syntax and analysis.
 
 ## Development
 
