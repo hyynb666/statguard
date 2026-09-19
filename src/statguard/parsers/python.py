@@ -59,7 +59,12 @@ class PythonSourceParser:
         try:
             encoding, _ = tokenize.detect_encoding(io.BytesIO(data).readline)
             source = data.decode(encoding)
-        except (SyntaxError, UnicodeError, LookupError) as error:
+        except SyntaxError as error:
+            # Python 3.14 can reject NUL bytes during encoding detection, while
+            # older versions reach ast.parse. Keep both entry points consistent.
+            code = ParseErrorCode.SYNTAX_ERROR if b"\0" in data else ParseErrorCode.ENCODING_ERROR
+            raise SourceParseError(code, label, str(error)) from error
+        except (UnicodeError, LookupError) as error:
             raise SourceParseError(ParseErrorCode.ENCODING_ERROR, label, str(error)) from error
         return self.parse_source(source, path=label)
 

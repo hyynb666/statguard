@@ -193,7 +193,17 @@ def test_file_encodings(parser: PythonSourceParser, tmp_path: Path, data: bytes)
 
 
 @pytest.mark.parametrize(
-    "source", ["def broken(:\n", "x =\n", "if True:\npass\n", "%time run()", "\0"]
+    "source",
+    [
+        "def broken(:\n",
+        "x =\n",
+        "if True:\npass\n",
+        "%time run()",
+        "\0",
+        "# coding: utf-8\n\0",
+        "# comment\n\0",
+        "x = 1\n\0",
+    ],
 )
 def test_syntax_errors_are_not_success(parser: PythonSourceParser, tmp_path: Path, source: str):
     path = tmp_path / "broken.py"
@@ -210,7 +220,7 @@ def test_syntax_errors_are_not_success(parser: PythonSourceParser, tmp_path: Pat
         assert error.message
         assert str(path) in str(error)
         assert isinstance(error.__cause__, SyntaxError)
-        if source != "\0":
+        if "\0" not in source:
             assert error.line is not None and error.line >= 1
 
 
