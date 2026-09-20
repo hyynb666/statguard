@@ -56,6 +56,16 @@ Notebook support reuses `parse_source` and maps cell identity separately. Follow
 cell types, partial parse errors, magic/shell syntax, language metadata, and
 ignored outputs. Existing core interfaces remain unchanged.
 
+## Core interface contributions
+
+Follow [the core interface contract](docs/core-interfaces.md). Keep Evidence
+separate from severity and confidence. Preserve Finding's legacy field names and
+constructor order, and distinguish the original Notebook cell index from the
+code-cell ordinal. Use fixture rules to test check/metadata and registry selection
+without adding built-in detections or an Analyzer. Cover invalid metadata,
+duplicate IDs, deterministic selection, enable/disable behavior, and analyze-only
+rule compatibility. Registration must not execute the rule's detection method.
+
 ## Review workflow
 
 Create a focused branch, implement the smallest complete change, and run the
