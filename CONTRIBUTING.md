@@ -1,9 +1,9 @@
 # Contributing to StatGuard
 
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
-The current foundation includes packaging, help/version commands, minimal public
-interfaces, Python source parsing, and Notebook parsing. Detection rules belong
-to later issues. Agree on a scoped change before expanding the roadmap.
+The foundation includes packaging, CLI scanning, Console/JSON reporting, public
+interfaces, Python and Notebook parsing, and Analyzer execution. Detection rules
+belong to later issues. Agree on a scoped change before expanding the roadmap.
 
 ## Set up and validate
 
@@ -38,8 +38,8 @@ Windows and Linux with Python 3.11–3.14 and checks a built wheel independently
 - Preserve uncertainty in evidence categories and wording. An undetermined
   observation must not become a confirmed violation or inflate finding counts.
 - Keep output deterministic and document compatibility changes to IDs, public
-  interfaces, JSON schema, and exit codes. This foundation does not yet define
-  or implement a JSON report schema.
+  interfaces, JSON schema, and exit codes. The schema is documented in
+  [docs/reporting.md](docs/reporting.md).
 
 ## Parser contributions
 
@@ -74,6 +74,16 @@ source or Notebook output data. Use test-only fixture rules to verify enabled
 selection, location mapping, exact deduplication, parser failures, rule failures,
 and partial Notebook results. New rules must report their own evidence precisely;
 Analyzer cannot infer statistical harm or repair an unsupported cell.
+
+## Scanner and reporter contributions
+
+Follow [the report contract](docs/reporting.md). Preserve stable traversal and
+complete, partial, and failed statuses. Keep JSON stdout standalone and never
+serialize AST, source, Notebook outputs, or arbitrary rule exception text.
+Test file/Notebook/directory scans, exclusions, empty inputs, explicit errors,
+exit codes, output writes, and no-execution behavior with test-only rules.
+Review any proposed JSON schema or exit-code change before release.
+
 ## Review workflow
 
 Create a focused branch, implement the smallest complete change, and run the
