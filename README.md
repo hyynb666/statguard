@@ -8,7 +8,7 @@ evidence and data lineage. Submitted code must never be imported or executed.
 ## Current status
 
 Milestone 1 now includes packaging, the help/version CLI, public data/rule
-interfaces, Python AST parsing, and Notebook parsing APIs.
+interfaces, Python and Notebook parsing APIs, and an Analyzer API for registered rules.
 Version `0.1.0.dev0` remains a development version.
 `statguard check`, text/JSON scan reports, and statistical detection rules are
 **not implemented yet**. Parsing reports syntax, not statistical validity.
@@ -46,6 +46,8 @@ in [the PRD](docs/PRD.md), not exposed as a pretend successful scan today.
 ```text
 src/statguard/
   cli.py                 # help/version entry point, standard-library argparse
+  context.py             # one parsed Python unit exposed to a rule
+  analyzer.py            # parser-to-rule execution and structured results
   core/
     findings.py          # immutable Finding, Evidence, Severity and Confidence
     rule.py              # Rule[ContextT] protocol
@@ -67,8 +69,9 @@ Rules provide `rule_id`, `name`, `description`, `default_severity`, and
 `check(context) -> Iterable[Finding]`. The registry validates metadata, rejects
 duplicate IDs, and selects enabled rules in deterministic ID order. Existing
 analyze-only rules retain registration/lookup compatibility through an adapter
-for enabled selection. No analysis context, Analyzer, or execution engine is
-implemented. See [the core API and compatibility notes](docs/core-interfaces.md).
+for enabled selection. AnalysisContext and Analyzer now connect these APIs for
+explicitly registered rules. No built-in detections or scan CLI are provided.
+See [the core API](docs/core-interfaces.md) and [Analyzer API](docs/analyzer.md).
 
 The Python parser converts AST byte offsets to one-based character columns.
 Notebook results disclose document-order limitations and retain cell identity.
@@ -128,6 +131,29 @@ output fields are not analyzed, rendered, or retained in parser results.
 
 See [Notebook API and limitations](docs/notebook-parser.md) for language metadata,
 partial results, and the difference between document and execution order.
+
+## Analyzer API
+
+```python
+from statguard.analyzer import Analyzer, AnalysisStatus
+from statguard.context import AnalysisContext
+from statguard.core import RuleRegistry
+
+registry = RuleRegistry[AnalysisContext]()
+# Register trusted rules explicitly; the package ships no detection rules yet.
+result = Analyzer(registry).analyze_source("x = 1\n", path="analysis.py")
+assert result.status is AnalysisStatus.COMPLETE
+assert result.findings == result.errors == ()
+```
+
+`analyze_file(path)` handles one `.py` or `.ipynb` file; `analyze_notebook_json(text)`
+accepts Notebook JSON; `analyze(parsed)` accepts an existing parser result.
+Results keep Findings, parser/rule errors, and Notebook notices separate. A
+partially parsed Notebook retains findings from valid cells and reports failed
+cells explicitly. The Analyzer sorts and exactly deduplicates Findings, fills
+Notebook cell identity, and never executes scanned source. It does not provide
+cross-cell data flow, CLI scanning or text/JSON reporting. See [Analyzer behavior,
+errors and limits](docs/analyzer.md).
 
 ## Development
 
