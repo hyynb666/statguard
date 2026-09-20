@@ -1,4 +1,4 @@
-"""Public Python syntax parsing API; no target code is imported or executed."""
+"""Public Python and Notebook syntax parsing API; no target code is imported or executed."""
 
 from statguard.parsers.models import (
     CallInfo,
@@ -8,10 +8,24 @@ from statguard.parsers.models import (
     SourceParseError,
     SyntaxNode,
 )
+from statguard.parsers.notebook import NotebookParser
+from statguard.parsers.notebook_models import (
+    NotebookCell,
+    NotebookIssue,
+    NotebookIssueCode,
+    NotebookParseError,
+    ParsedNotebook,
+)
 from statguard.parsers.python import PythonSourceParser
 
 __all__ = [
     "CallInfo",
+    "NotebookCell",
+    "NotebookIssue",
+    "NotebookIssueCode",
+    "NotebookParseError",
+    "NotebookParser",
+    "ParsedNotebook",
     "ParsedSource",
     "ParseErrorCode",
     "PythonSourceParser",
