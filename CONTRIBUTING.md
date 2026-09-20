@@ -62,10 +62,18 @@ Follow [the core interface contract](docs/core-interfaces.md). Keep Evidence
 separate from severity and confidence. Preserve Finding's legacy field names and
 constructor order, and distinguish the original Notebook cell index from the
 code-cell ordinal. Use fixture rules to test check/metadata and registry selection
-without adding built-in detections or an Analyzer. Cover invalid metadata,
+without adding built-in detections. Cover invalid metadata,
 duplicate IDs, deterministic selection, enable/disable behavior, and analyze-only
 rule compatibility. Registration must not execute the rule's detection method.
 
+## Analyzer contributions
+
+Follow [the Analyzer contract](docs/analyzer.md). Keep AnalysisContext scoped to
+one parsed source unit and expose parser-owned AST/indexes without evaluating
+source or Notebook output data. Use test-only fixture rules to verify enabled
+selection, location mapping, exact deduplication, parser failures, rule failures,
+and partial Notebook results. New rules must report their own evidence precisely;
+Analyzer cannot infer statistical harm or repair an unsupported cell.
 ## Review workflow
 
 Create a focused branch, implement the smallest complete change, and run the

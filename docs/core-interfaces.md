@@ -2,8 +2,9 @@
 
 `statguard.core` exports `Finding`, `Evidence`, `Severity`, `Confidence`,
 `Rule[ContextT]`, and `RuleRegistry[ContextT]`. These interfaces represent
-observations, rule contracts, and explicit rule selection. They do not implement
-an Analyzer, analysis context, rule engine, built-in detection rules, or reports.
+observations, rule contracts, and explicit rule selection. The separate
+[Analysis Context and Analyzer](analyzer.md) now connect them to existing parsers.
+Built-in detection rules and reports remain unimplemented.
 All implementation dependencies are in the Python standard library.
 
 ## Finding
@@ -52,8 +53,8 @@ currently planned statistical/ML rule IDs.
 Severity describes the diagnostic level; confidence describes the rule author's
 confidence in the observation, not a measured probability. Neither determines
 the PRD Evidence category. The conservative LOW/UNDETERMINED defaults do not
-assert a violation. A future Analyzer must not count UNDETERMINED as a finding
-of a confirmed violation, even when severity is ERROR or confidence is HIGH.
+assert a violation. The Analyzer retains this category without promoting it to a confirmed
+violation, even when severity is ERROR or confidence is HIGH.
 Rules should provide an explicit evidence category when their required evidence
 has been established. No category permits inventing source evidence or claiming
 measured statistical effects from syntax alone.
@@ -120,7 +121,8 @@ objects need not inherit Rule, but must provide the new metadata and check entry
 Rules never print diagnostics or execute scanned source. A rule should pass its
 default severity explicitly when constructing a Finding if it wants that default
 to apply. The registry does not rewrite results or apply metadata to findings.
-Context remains generic until a later issue defines conservative analysis facts.
+Rules receive AnalysisContext from the Analyzer. Conservative data-flow facts
+and library-specific reasoning are still outside this core contract.
 
 ```python
 from statguard.core import Rule, RuleRegistry, Severity
