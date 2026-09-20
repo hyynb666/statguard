@@ -1,9 +1,9 @@
 # Contributing to StatGuard
 
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
-The current foundation includes packaging, help/version commands, and minimal
-public interfaces. Python/notebook parsing and detection rules belong to later
-issues. Agree on a scoped change before expanding the roadmap.
+The current foundation includes packaging, help/version commands, minimal public
+interfaces, and Python source parsing. Notebook parsing and detection rules belong
+to later issues. Agree on a scoped change before expanding the roadmap.
 
 ## Set up and validate
 
@@ -40,6 +40,19 @@ Windows and Linux with Python 3.11–3.14 and checks a built wheel independently
 - Keep output deterministic and document compatibility changes to IDs, public
   interfaces, JSON schema, and exit codes. This foundation does not yet define
   or implement a JSON report schema.
+
+## Parser contributions
+
+Follow [the parser API contract](docs/python-parser.md). Preserve the raw AST and
+unknown dynamic expressions; do not resolve imported libraries or introduce rule
+logic into syntax parsing. Treat `enclosing_definitions` as syntax ancestry, not
+runtime scope or proof of execution order.
+
+Test strings and files, Unicode character columns, multiline spans, source
+encodings, explicit failures, and absence of target-code side effects. Simulate
+permission-denied reads in tests rather than changing machine permissions.
+Notebook support should reuse `parse_source` and map unit locations separately;
+it is not implemented in this change. Existing core interfaces remain unchanged.
 
 ## Review workflow
 
