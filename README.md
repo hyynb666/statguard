@@ -47,27 +47,31 @@ in [the PRD](docs/PRD.md), not exposed as a pretend successful scan today.
 src/statguard/
   cli.py                 # help/version entry point, standard-library argparse
   core/
-    findings.py          # immutable Finding and Evidence categories
+    findings.py          # immutable Finding, Evidence, Severity and Confidence
     rule.py              # Rule[ContextT] protocol
-    registry.py          # explicit registration and deterministic iteration
+    registry.py          # registration, validation and deterministic rule selection
   parsers/               # PythonSourceParser, NotebookParser, syntax records and errors
   rules/                 # no built-in rules yet
   reporters/             # reserved for text/JSON rendering
 tests/
 ```
 
-`from statguard.core import Evidence, Finding, Rule, RuleRegistry` exposes the
-minimal interfaces. Findings carry a path, one-based line/column and optional
-one-based code-cell index, observed message, risk, recommendation, and evidence
-category. Evidence is not severity, and an undetermined observation is not a
-confirmed violation. The Python parser converts AST byte offsets to one-based character columns.
-Notebook results disclose document-order limitations and retain cell identity.
+`statguard.core` exports `Finding`, `Evidence`, `Severity`, `Confidence`, `Rule`,
+and `RuleRegistry`. Frozen findings expose severity, confidence, file path,
+line/optional column, original Notebook cell index, message, explanation,
+suggestion, and a separate PRD evidence category. Existing `path`, `risk`,
+`recommendation` and code-cell `cell` fields remain supported. An undetermined
+observation is not a confirmed violation.
 
-Rules provide stable `rule_id` and `description` metadata plus
-`analyze(context) -> Iterable[Finding]`. Context is generic for now; no analysis
-context or engine is implemented. The registry rejects duplicate IDs, supports
-lookup, and iterates by ID without executing rules or importing plugins. These
-interfaces remain provisional during pre-alpha development.
+Rules provide `rule_id`, `name`, `description`, `default_severity`, and
+`check(context) -> Iterable[Finding]`. The registry validates metadata, rejects
+duplicate IDs, and selects enabled rules in deterministic ID order. Existing
+analyze-only rules retain registration/lookup compatibility through an adapter
+for enabled selection. No analysis context, Analyzer, or execution engine is
+implemented. See [the core API and compatibility notes](docs/core-interfaces.md).
+
+The Python parser converts AST byte offsets to one-based character columns.
+Notebook results disclose document-order limitations and retain cell identity.
 
 ## Python parser API
 
