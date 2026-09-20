@@ -2,7 +2,7 @@
 
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The current foundation includes packaging, help/version commands, minimal public
-interfaces, and Python source parsing. Notebook parsing and detection rules belong
+interfaces, Python source parsing, and Notebook parsing. Detection rules belong
 to later issues. Agree on a scoped change before expanding the roadmap.
 
 ## Set up and validate
@@ -51,8 +51,10 @@ runtime scope or proof of execution order.
 Test strings and files, Unicode character columns, multiline spans, source
 encodings, explicit failures, and absence of target-code side effects. Simulate
 permission-denied reads in tests rather than changing machine permissions.
-Notebook support should reuse `parse_source` and map unit locations separately;
-it is not implemented in this change. Existing core interfaces remain unchanged.
+Notebook support reuses `parse_source` and maps cell identity separately. Follow
+[the Notebook contract](docs/notebook-parser.md): test both cell indexes, mixed
+cell types, partial parse errors, magic/shell syntax, language metadata, and
+ignored outputs. Existing core interfaces remain unchanged.
 
 ## Review workflow
 

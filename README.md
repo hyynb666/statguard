@@ -8,8 +8,8 @@ evidence and data lineage. Submitted code must never be imported or executed.
 ## Current status
 
 Milestone 1 now includes packaging, the help/version CLI, public data/rule
-interfaces, and a Python AST parser API for source strings and .py files.
-Version `0.1.0.dev0` remains a development version. Notebook parsing,
+interfaces, Python AST parsing, and Notebook parsing APIs.
+Version `0.1.0.dev0` remains a development version.
 `statguard check`, text/JSON scan reports, and statistical detection rules are
 **not implemented yet**. Parsing reports syntax, not statistical validity.
 
@@ -50,7 +50,7 @@ src/statguard/
     findings.py          # immutable Finding and Evidence categories
     rule.py              # Rule[ContextT] protocol
     registry.py          # explicit registration and deterministic iteration
-  parsers/               # PythonSourceParser, syntax records and explicit errors
+  parsers/               # PythonSourceParser, NotebookParser, syntax records and errors
   rules/                 # no built-in rules yet
   reporters/             # reserved for text/JSON rendering
 tests/
@@ -61,7 +61,7 @@ minimal interfaces. Findings carry a path, one-based line/column and optional
 one-based code-cell index, observed message, risk, recommendation, and evidence
 category. Evidence is not severity, and an undetermined observation is not a
 confirmed violation. The Python parser converts AST byte offsets to one-based character columns.
-A future notebook parser must disclose document-order limitations.
+Notebook results disclose document-order limitations and retain cell identity.
 
 Rules provide stable `rule_id` and `description` metadata plus
 `analyze(context) -> Iterable[Finding]`. Context is generic for now; no analysis
@@ -93,6 +93,37 @@ evaluated, and imports are not resolved or loaded.
 
 See [the parser API and limitations](docs/python-parser.md) for location semantics,
 encoding support, error handling, and the boundary between syntax and analysis.
+
+## Notebook parser API
+
+```python
+from statguard.parsers import NotebookParseError, NotebookParser
+
+try:
+    book = NotebookParser().parse_file("experiment.ipynb")
+except NotebookParseError as error:
+    print(error.issue)  # Fatal file, JSON, structure or language error.
+else:
+    for cell in book.code_cells:
+        if cell.error is not None:
+            print(cell.error)  # Failed cells are explicit; later cells still parse.
+        else:
+            print(cell.cell_index, cell.code_cell_index, cell.parsed.calls)
+```
+
+`parse_json(text, path="experiment.ipynb")` accepts Notebook JSON text. Only
+explicitly declared Python notebooks in nbformat 4 are supported. Standard Python
+code cells reuse `PythonSourceParser`; magic/shell syntax leaves the whole cell
+unparsed with an error. Markdown and raw cells are not parsed as Python.
+
+Both indexes are one-based: `cell_index` counts all original cells, while
+`code_cell_index` counts code cells only and matches the future `Finding.cell`
+convention. Locations within each parsed unit remain relative to its cell.
+No code, commands, or outputs are executed. JSON decoding reads the container;
+output fields are not analyzed, rendered, or retained in parser results.
+
+See [Notebook API and limitations](docs/notebook-parser.md) for language metadata,
+partial results, and the difference between document and execution order.
 
 ## Development
 

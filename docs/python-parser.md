@@ -123,10 +123,10 @@ TypeError.
 - No resource sandbox, file-size limit, or protection against all interpreter
   memory/stack exhaustion is provided. Untrusted input is never executed, but
   hostile input can still consume parser resources.
-- Notebook parsing, cell mapping, directory scanning, scan CLI, reporters, rule
-  engine, and statistical rules remain unimplemented. A future notebook parser
-  can call `parse_source` for Python code cells, then attach cell identity and
-  notebook-order notices without changing the Python syntax extractor.
+- [NotebookParser](notebook-parser.md) reuses `parse_source` for each Python code
+  cell, attaching cell identity and document-order notices separately. Directory
+  scanning, scan CLI, reporters, rule engine, and statistical rules remain
+  unimplemented.
 
 Tests cover both entry points, aliases, relative imports, dynamic calls,
 annotations, nesting, encoding/newline variants, locations, explicit errors,
