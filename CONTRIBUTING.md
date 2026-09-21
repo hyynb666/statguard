@@ -75,6 +75,14 @@ selection, location mapping, exact deduplication, parser failures, rule failures
 and partial Notebook results. New rules must report their own evidence precisely;
 Analyzer cannot infer statistical harm or repair an unsupported cell.
 
+## Symbol resolution contributions
+
+Follow [the symbol contract](docs/symbols.md). Preserve point-of-use binding
+versions, parser-owned AST identity and independent function/cell scopes.
+Never infer types from capitalization or library identity from coincident names.
+Test alias shadowing, reassignment, control-flow barriers, dynamic operations
+and unknown origins; recorded calls do not establish input/output lineage.
+
 ## Scanner and reporter contributions
 
 Follow [the report contract](docs/reporting.md). Preserve stable traversal and

@@ -1,9 +1,10 @@
 """One parsed Python unit exposed to a rule, without executing target source."""
 
 import ast
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from statguard.parsers.models import CallInfo, ParsedSource, SyntaxNode
+from statguard.symbols import SymbolResolver
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,6 +20,7 @@ class AnalysisContext:
     parsed: ParsedSource
     cell_index: int | None = None
     cell: int | None = None
+    _symbols: SymbolResolver | None = field(default=None, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if not isinstance(self.parsed, ParsedSource):
@@ -67,3 +69,10 @@ class AnalysisContext:
     @property
     def is_notebook(self) -> bool:
         return self.cell_index is not None
+
+    @property
+    def symbols(self) -> SymbolResolver:
+        """Lazily index this unit only; existing parser objects remain unchanged."""
+        if self._symbols is None:
+            object.__setattr__(self, "_symbols", SymbolResolver(self.parsed))
+        return self._symbols

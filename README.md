@@ -10,7 +10,8 @@ It parses source without importing or executing submitted code. Version
 The CLI scans individual `.py` and `.ipynb` files or directories recursively,
 reports parse and rule failures, and renders Console or JSON results. Python
 and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule, and RuleRegistry
-are available as Python APIs. **No statistical or machine learning detection
+are available as Python APIs. Import aliases and basic assignment/call provenance
+are available through AnalysisContext.symbols. **No statistical or machine learning detection
 rules are shipped yet.** A clean scan means the scanned syntax was processed; it
 does not establish statistical correctness. No cross-cell data flow, directory
 configuration file, or Notebook execution history analysis is implemented.
@@ -84,7 +85,8 @@ trigger the threshold.
 src/statguard/
   cli.py                 # command parsing and scan coordination
   scanner.py             # deterministic discovery and result aggregation
-  context.py             # one parsed Python unit exposed to a rule
+  context.py             # parsed unit and lazy symbol facts exposed to a rule
+  symbols.py             # conservative import paths and versioned bindings
   analyzer.py            # parser-to-rule execution and structured results
   core/                  # Finding, Evidence, Severity, Confidence, Rule, RuleRegistry
   parsers/               # PythonSourceParser and NotebookParser
@@ -105,7 +107,10 @@ rule. `Analyzer` calls enabled rules and returns Findings, parse/rule errors,
 and Notebook notices separately, with `complete`, `partial`, or `failed`
 status. Reporters only format those results. See the [Python parser](docs/python-parser.md),
 [Notebook parser](docs/notebook-parser.md), [core interface](docs/core-interfaces.md),
-[Analyzer](docs/analyzer.md), and [reporting](docs/reporting.md) contracts.
+[Analyzer](docs/analyzer.md), [symbol resolution](docs/symbols.md), and
+[reporting](docs/reporting.md) contracts. Symbol resolution handles straight-line
+module and independent function-local statements; outer-scope names, complex
+control flow and runtime types remain unknown. It does not infer train/test lineage.
 
 ## Development
 
