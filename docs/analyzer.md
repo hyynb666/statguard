@@ -3,8 +3,9 @@
 `statguard.context.AnalysisContext` gives an explicitly registered rule a
 read-only view of one successfully parsed Python unit. `statguard.analyzer.Analyzer`
 connects the existing parsers and RuleRegistry, runs enabled rules, and returns
-structured results. No built-in statistical or machine learning rules, scan CLI,
-Reporter, directory discovery, or cross-unit data-flow analysis are included.
+structured results. The CLI, scanner and reporters wrap this API; see
+[reporting.md](reporting.md). No built-in statistical or machine learning rules
+or cross-unit data-flow analysis are included.
 
 ## Public Python API
 
@@ -54,8 +55,10 @@ original cells, while `cell` is its ordinal among code cells (the PRD/Finding
 convention). Line and column in Findings are relative to the code cell.
 NotebookParser parses cells independently in document order; Context contains
 one cell and no historical execution, external state, or cross-cell lineage.
-Function bodies and other syntax are available in the AST, but this issue does
-not infer control flow, types, aliases, library identities, or statistical harm.
+Context.symbols lazily provides import paths and versioned basic bindings over
+this AST; see [symbols.md](symbols.md). It supports straight-line module and
+independent function-local statements. It does not infer runtime types,
+cross-scope state, library implementations or statistical harm.
 
 Analyzer never imports, evaluates, compiles for execution, or runs submitted
 Python/Notebook code. Only explicitly registered, trusted rule objects are
