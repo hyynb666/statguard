@@ -120,3 +120,10 @@ later local assignments/annotations must never fall back to a module import.
 Supporting module import *candidates* separately from proven bindings could be a
 future API extension, but must not expose a candidate as a resolved qualified_name.
 No call-site or cross-function state analysis is introduced in this version.
+
+## Provenance integration
+
+Issue #8 adds optional flat-unpacking syntax evidence to SymbolValue without
+changing its unknown classification. `SymbolResolver.parsed` exposes the owned
+unit. [The provenance layer](provenance.md) interprets only documented split
+semantics and reuses these versioned bindings; it does not repeat name resolution.

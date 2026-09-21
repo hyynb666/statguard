@@ -11,8 +11,9 @@ The CLI scans individual `.py` and `.ipynb` files or directories recursively,
 reports parse and rule failures, and renders Console or JSON results. Python
 and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule, and RuleRegistry
 are available as Python APIs. Import aliases and basic assignment/call provenance
-are available through AnalysisContext.symbols. **No statistical or machine learning detection
-rules are shipped yet.** A clean scan means the scanned syntax was processed; it
+are available through AnalysisContext.symbols. Limited split and transformation
+provenance is available through AnalysisContext.provenance.
+**No statistical or machine learning detection rules are shipped yet.** A clean scan means the scanned syntax was processed; it
 does not establish statistical correctness. No cross-cell data flow, directory
 configuration file, or Notebook execution history analysis is implemented.
 
@@ -110,7 +111,8 @@ status. Reporters only format those results. See the [Python parser](docs/python
 [Analyzer](docs/analyzer.md), [symbol resolution](docs/symbols.md), and
 [reporting](docs/reporting.md) contracts. Symbol resolution handles straight-line
 module and independent function-local statements; outer-scope names, complex
-control flow and runtime types remain unknown. It does not infer train/test lineage.
+control flow and runtime types remain unknown. Supported sklearn split outputs
+and explicit StandardScaler transformations have limited provenance tracking; see [the provenance contract](docs/provenance.md).
 
 ## Development
 

@@ -105,3 +105,11 @@ read from installed distribution metadata. Reinstall after changing that version
 Package publication and release tagging are separate operations and are not part
 of a normal development push. Contributions are distributed under the project's
 [MIT License](LICENSE).
+
+## Provenance contributions
+
+Follow [the provenance contract](docs/provenance.md). Keep syntactic call inputs
+separate from proven data sources. Library return semantics belong in the small
+adapter, with official documentation and negative cases for coincident names,
+reassignment, unknown effects and ambiguous argument/output shapes. Never infer
+train/test roles from variable spelling or generic method names.

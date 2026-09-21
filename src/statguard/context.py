@@ -4,6 +4,7 @@ import ast
 from dataclasses import dataclass, field
 
 from statguard.parsers.models import CallInfo, ParsedSource, SyntaxNode
+from statguard.provenance import ProvenanceTracker
 from statguard.symbols import SymbolResolver
 
 
@@ -21,6 +22,10 @@ class AnalysisContext:
     cell_index: int | None = None
     cell: int | None = None
     _symbols: SymbolResolver | None = field(default=None, init=False, repr=False, compare=False)
+
+    _provenance: ProvenanceTracker | None = field(
+        default=None, init=False, repr=False, compare=False
+    )
 
     def __post_init__(self) -> None:
         if not isinstance(self.parsed, ParsedSource):
@@ -76,3 +81,14 @@ class AnalysisContext:
         if self._symbols is None:
             object.__setattr__(self, "_symbols", SymbolResolver(self.parsed))
         return self._symbols
+
+    @property
+    def provenance(self) -> ProvenanceTracker:
+        """Data relationships for this unit, using the same cached symbols."""
+        if self._provenance is None:
+            object.__setattr__(
+                self,
+                "_provenance",
+                ProvenanceTracker(self.parsed, self.symbols, cell_index=self.cell_index),
+            )
+        return self._provenance
