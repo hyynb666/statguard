@@ -44,7 +44,9 @@ original cells from one; `cell` counts code cells from one. Line and column
 refer to the code cell. Parse and rule failures are never serialized as
 Findings. Arbitrary exception text from a rule is omitted from rendered
 `rule_execution` errors to avoid disclosing submitted or trusted-rule data.
-JSON never contains AST nodes, code, Notebook outputs, HTML, or images.
+JSON uses ASCII escapes for non-ASCII text so redirected stdout remains
+parseable under Windows legacy code pages. Console stdout is UTF-8. JSON
+never contains AST nodes, code, Notebook outputs, HTML, or images.
 Notebook JSON decoding reads the container; output fields are not inspected
 or passed to Analyzer.
 

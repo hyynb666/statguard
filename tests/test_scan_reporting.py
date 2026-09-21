@@ -73,6 +73,7 @@ def test_single_python_file_and_parseable_json(tmp_path: Path) -> None:
     target.write_text("# 中文\nx = 1\n", encoding="utf-8")
     result = invoke("check", str(target), "--format", "json")
     payload = json.loads(result.stdout)
+    assert result.stdout.isascii()  # Portable even with a non-UTF-8 Windows console.
     assert result.returncode == 0 and result.stderr == ""
     assert payload["tool"] == "statguard" and payload["schema_version"] == "1.0"
     assert payload["summary"]["scanned_files"] == 1
@@ -314,3 +315,11 @@ def test_output_report_contains_partial_failure(tmp_path: Path, capsys) -> None:
     assert capsys.readouterr().out == ""
     payload = json.loads(output.read_text(encoding="utf-8"))
     assert payload["analysis_errors"][0]["code"] == "syntax_error"
+
+
+def test_console_handles_unicode_path(tmp_path: Path) -> None:
+    target = tmp_path / "分析.py"
+    target.write_text("x = 1", encoding="utf-8")
+    result = invoke("check", str(target))
+    assert result.returncode == 0
+    assert "Scanned 1 files" in result.stdout

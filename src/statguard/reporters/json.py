@@ -81,4 +81,4 @@ def render_json(report: ScanReport) -> str:
             for item in report.notebook_notices
         ],
     }
-    return json.dumps(document, ensure_ascii=False, indent=2) + "\n"
+    return json.dumps(document, ensure_ascii=True, indent=2) + "\n"

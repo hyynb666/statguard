@@ -68,6 +68,8 @@ def main(
             print(f"statguard: error: cannot write report: {type(error).__name__}", file=sys.stderr)
             return 2
     else:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
         sys.stdout.write(rendered)
 
     if report.analysis_errors:
