@@ -105,3 +105,18 @@ The implementation uses only the standard library, parser-owned nodes and
 ParsedSource.location_for. Tests cover import paths, versioned aliases,
 reassignment, local scopes, unsupported effects, original AST identity, and
 Notebook isolation through an Analyzer test rule.
+
+### Review note: imports used inside functions
+
+A module import is not a guaranteed binding at function invocation time. For
+example, `from package import Factory; def f(): ...` may be followed by a
+reassignment or deletion of Factory, and callers may modify the module namespace.
+Neither a definition-time snapshot nor the final module environment proves the
+binding when f runs. This version therefore keeps such references unknown,
+including an otherwise simple StandardScaler preprocessing function. A local
+import inside the function can establish a supported binding. Parameters and
+later local assignments/annotations must never fall back to a module import.
+
+Supporting module import *candidates* separately from proven bindings could be a
+future API extension, but must not expose a candidate as a resolved qualified_name.
+No call-site or cross-function state analysis is introduced in this version.

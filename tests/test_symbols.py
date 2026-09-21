@@ -374,3 +374,66 @@ def test_resolver_never_modifies_parser_ast():
     before = ast.dump(ctx.tree, include_attributes=True)
     assert ctx.symbols.bindings
     assert ast.dump(ctx.tree, include_attributes=True) == before
+
+
+@pytest.mark.parametrize(
+    "tail",
+    ["", "StandardScaler = replacement\n", "del StandardScaler\n"],
+)
+def test_module_import_is_not_assumed_stable_at_function_invocation(tail):
+    ctx = context(
+        "from sklearn.preprocessing import StandardScaler\n"
+        "def preprocess(X):\n"
+        "    scaler = StandardScaler()\n"
+        "    return scaler.fit_transform(X)\n" + tail
+    )
+    value = resolved(ctx, "StandardScaler")
+    assert value.is_unknown and value.qualified_name is None
+    assert resolved(ctx, "scaler.fit_transform").is_unknown
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "    before = p\n    p = 1\n",
+        "    before = p\n    p: object\n",
+        "    before = p\n    if flag:\n        p = other\n",
+    ],
+)
+def test_later_local_declaration_never_falls_back_to_module_import(body):
+    ctx = context("import package as p\ndef f():\n" + body + "module = p\n")
+    assert resolved(ctx, "p", 0).is_unknown
+    assert resolved(ctx, "p", 1).qualified_name == "package"
+
+
+def test_local_import_resolves_without_assuming_module_binding():
+    ctx = context(
+        "import global_package as p\n"
+        "def f(p):\n"
+        "    before = p\n"
+        "    import local_package as p\n"
+        "    result = p.Factory()\n"
+        "p = replacement\n"
+    )
+    assert resolved(ctx, "p", 0).is_unknown
+    assert resolved(ctx, "p.Factory").qualified_name == "local_package.Factory"
+
+
+def test_callee_is_loaded_before_arguments_and_arguments_follow_effects():
+    ctx = context(
+        "import package as p\nresult = p.run(p.first, exec(code), later=p.second)\nafter = p\n"
+    )
+    # The already loaded callee/first argument must not use the final environment.
+    assert resolved(ctx, "p.run").qualified_name == "package.run"
+    assert resolved(ctx, "p.first").qualified_name == "package.first"
+    assert resolved(ctx, "p.second").is_unknown
+    assert ctx.symbols.resolve(ctx.tree.body[-1].value).is_unknown
+
+
+def test_symbol_values_are_frozen_and_context_cache_is_lazy():
+    ctx = context("import package as p\nx = p")
+    assert ctx._symbols is None
+    value = resolved(ctx, "p")
+    assert ctx._symbols is ctx.symbols
+    with pytest.raises(FrozenInstanceError):
+        value.kind = ValueKind.UNKNOWN
