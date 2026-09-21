@@ -64,10 +64,18 @@ added. The explicit public API contracts are:
   recorded but their runtime validity is not evaluated.
 - [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html):
   `transform` and `fit_transform` on a receiver with an explicit public
-  `sklearn.preprocessing.StandardScaler()`, `MinMaxScaler()` or `RobustScaler()` construction preserve the direct X
-  source and its roles. X may be positional or an unambiguous keyword. Other
-  arguments are recorded, but y, sample weights and fitted state are not merged
-  into X's provenance. Direct constructor chains and receiver aliases work.
+  `sklearn.preprocessing.StandardScaler()`, `MinMaxScaler()` or
+  `RobustScaler()` construction preserve the direct X source and its roles.
+- [SimpleImputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html):
+  the same direct-X transformation relationship is recorded for explicit public
+  `SimpleImputer()`, `KNNImputer()` and `IterativeImputer()` constructions.
+  Provenance records the relationship independently of whether the constructor
+  configuration is data-dependent; [ML002](ml002.md) applies stricter strategy
+  evidence before issuing a Finding.
+
+For these transformations, X may be positional or an unambiguous keyword.
+Other arguments are recorded, but y, sample weights and fitted state are not
+merged into X's provenance. Direct constructor chains and receiver aliases work.
 
 This small allowlist is deliberate. Other transformers, subclasses, factories,
 private import paths, pipelines and `fit(...).transform(...)` are not inferred.
@@ -96,8 +104,9 @@ SymbolValue gained optional `unpack_source`, `unpack_index`, `unpack_size`
 syntax evidence. Its existing unknown classification for unpacking is unchanged;
 only the provenance adapter interprets recognized split projections. The resolver
 also exposes its parser-owned `parsed` unit to reject mismatched tracker inputs.
-Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. The provenance layer itself emits no diagnostics. Issue #9 adds [ML001](ml001.md)
-as a separate consumer without changing the JSON report schema.
+Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. The
+provenance layer itself emits no diagnostics. [ML001](ml001.md) and
+[ML002](ml002.md) consume these facts without changing the JSON report schema.
 
 ## Review robustness
 

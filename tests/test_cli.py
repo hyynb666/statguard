@@ -52,7 +52,15 @@ def test_check_scans_without_executing_input(cli: list[str], tmp_path: Path) -> 
     target = tmp_path / "analysis.py"
     target.write_text("from pathlib import Path\nPath('executed').touch()\n", encoding="utf-8")
     result = subprocess.run(
-        [*cli, "check", str(target), "--disable-rule", "ML001"],
+        [
+            *cli,
+            "check",
+            str(target),
+            "--disable-rule",
+            "ML001",
+            "--disable-rule",
+            "ML002",
+        ],
         cwd=tmp_path,
         capture_output=True,
         text=True,

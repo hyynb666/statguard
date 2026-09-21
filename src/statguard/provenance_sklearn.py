@@ -11,6 +11,14 @@ SCALER_PATHS = frozenset(
         "sklearn.preprocessing.RobustScaler",
     }
 )
+IMPUTER_PATHS = frozenset(
+    {
+        "sklearn.impute.SimpleImputer",
+        "sklearn.impute.KNNImputer",
+        "sklearn.impute.IterativeImputer",
+    }
+)
+TRANSFORMER_PATHS = SCALER_PATHS | IMPUTER_PATHS
 
 
 def split_inputs(value: SymbolValue) -> tuple[ast.expr, ...] | None:
@@ -32,10 +40,10 @@ def split_inputs(value: SymbolValue) -> tuple[ast.expr, ...] | None:
 
 
 def transformed_input(value: SymbolValue) -> ast.expr | None:
-    """Supported scalers' public contracts returns transformed X, not y or fit state.
+    """Return X for explicitly supported sklearn transform calls.
 
-    A name such as transform alone is never sufficient. No fit-return-self,
-    subclass, pipeline or arbitrary factory type inference is attempted.
+    A method name alone is never sufficient. No fit-return-self, subclass,
+    pipeline, factory, or arbitrary runtime type inference is attempted.
     """
     if value.kind is not ValueKind.CALL:
         return None
@@ -46,7 +54,10 @@ def transformed_input(value: SymbolValue) -> ast.expr | None:
     }:
         return None
     receiver = method.base.origin
-    if receiver.kind is not ValueKind.CALL or receiver.callee.qualified_name not in SCALER_PATHS:
+    if (
+        receiver.kind is not ValueKind.CALL
+        or receiver.callee.qualified_name not in TRANSFORMER_PATHS
+    ):
         return None
     node = value.node
     standard = receiver.callee.qualified_name == "sklearn.preprocessing.StandardScaler"
@@ -99,3 +110,42 @@ def learns_scaling_parameters(callee: SymbolValue) -> bool:
                 return False
             enabled[kw.arg] = kw.value.value
     return not switches or any(enabled.values())
+
+
+def imputer_semantics(callee: SymbolValue) -> str | None:
+    """Describe proven data-dependent fitting, or abstain on unknown semantics."""
+    method = callee.origin
+    if method.kind is not ValueKind.ATTRIBUTE or method.base is None:
+        return None
+    receiver = method.base.origin
+    if receiver.kind is not ValueKind.CALL:
+        return None
+    name = receiver.callee.qualified_name
+    if name not in IMPUTER_PATHS:
+        return None
+    constructor = receiver.node
+    keyword_names = [kw.arg for kw in constructor.keywords]
+    if (
+        constructor.args
+        or any(name is None for name in keyword_names)
+        or len(set(keyword_names)) != len(keyword_names)
+    ):
+        return None
+    if name == "sklearn.impute.KNNImputer":
+        return "neighbor reference samples"
+    if name == "sklearn.impute.IterativeImputer":
+        return "iteratively fitted estimation models"
+
+    strategy = "mean"
+    for keyword in constructor.keywords:
+        if keyword.arg == "strategy":
+            if not isinstance(keyword.value, ast.Constant) or not isinstance(
+                keyword.value.value, str
+            ):
+                return None
+            strategy = keyword.value.value
+    return {
+        "mean": "column means",
+        "median": "column medians",
+        "most_frequent": "most-frequent column values",
+    }.get(strategy)

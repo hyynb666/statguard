@@ -120,3 +120,11 @@ Follow [the ML001 contract](docs/ml001.md). Preserve exact receiver provenance,
 input lineage and same-scope evaluation order. Test safe train-only fitting,
 unrelated inputs, alias/rebinding, unknown state and configuration that disables
 learning. Medium confidence describes static risk, not measured model harm.
+
+## ML002 changes
+
+Follow [the ML002 contract](docs/ml002.md). Require an exact sklearn imputer
+construction, proven fit_transform output lineage and same-scope order. Preserve
+the distinction between data-dependent SimpleImputer strategies, fixed constant
+replacement, KNN reference samples and Iterative fitted models. Dynamic strategy
+semantics must cause conservative abstention.
