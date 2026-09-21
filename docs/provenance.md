@@ -98,3 +98,12 @@ only the provenance adapter interprets recognized split projections. The resolve
 also exposes its parser-owned `parsed` unit to reject mismatched tracker inputs.
 Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. No
 formal ML/statistical rules or JSON report schema changes are included.
+
+## Review robustness
+
+Provenance dependencies are materialized with an explicit postorder stack and
+cached per symbol/binding. Long alias and transformation chains do not depend on
+Python's recursion limit or on querying earlier bindings first. Regression tests
+cover 1,200 binding versions in both forward and reverse query order, as well as
+AST relationships for transformations before and after splitting. These records
+remain evidence only; they do not issue leakage diagnoses.

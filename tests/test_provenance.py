@@ -288,3 +288,38 @@ def test_queries_do_not_change_ids_or_parser_ast():
     assert other.provenance.splits[0].id == forward.id
     assert binding(other, "copy").id == backward.id
     assert ast.dump(ctx.tree, include_attributes=True) == before
+
+
+@pytest.mark.parametrize("chain", ["alias", "transform"])
+def test_long_provenance_chain_is_independent_of_query_order(chain):
+    prefix = SPLIT + SCALER + "s = Scaler()\na0, b = split(X)\n"
+    lines = [
+        f"a{i} = " + (f"a{i - 1}" if chain == "alias" else f"s.transform(a{i - 1})")
+        for i in range(1, 1200)
+    ]
+    source = prefix + "\n".join(lines)
+    backward = context(source)
+    last = binding(backward, "a1199")
+    assert last.roles[0].role == "train"
+    forward = context(source)
+    for item in forward.symbols.bindings:
+        forward.provenance.for_binding(item)
+    other = binding(forward, "a1199")
+    assert last.id == other.id and last.roles == other.roles
+
+
+def test_split_before_and_after_transform_keep_ast_evidence_without_diagnosis():
+    after = context(SPLIT + SCALER + "s = Scaler()\na, b = split(X)\nout = s.fit_transform(a)")
+    transformed = origin(binding(after, "out"))
+    split = after.provenance.splits[0]
+    assert transformed.sources[0].roles[0].split_id == split.id
+    assert split.location.line < transformed.location.line
+    assert transformed.node is after.tree.body[-1].value
+
+    before = context(SPLIT + SCALER + "s = Scaler()\nout = s.fit_transform(X)\na, b = split(out)")
+    transformed = origin(binding(before, "out"))
+    split = before.provenance.splits[0]
+    assert origin(split.sources[0]) is transformed
+    assert transformed.location.line < split.location.line
+    assert transformed.roles == ()
+    assert split.node is before.tree.body[-1].value
