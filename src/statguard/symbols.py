@@ -31,6 +31,9 @@ class SymbolValue:
     base: "SymbolValue | None" = None
     attribute: str | None = None
     callee: "SymbolValue | None" = None
+    unpack_source: "SymbolValue | None" = None
+    unpack_index: int | None = None
+    unpack_size: int | None = None
 
     @property
     def origin(self) -> "SymbolValue":
@@ -110,10 +113,16 @@ class SymbolResolver:
     def __init__(self, parsed: ParsedSource) -> None:
         if not isinstance(parsed, ParsedSource):
             raise TypeError("parsed must be a ParsedSource")
+        self._parsed = parsed
         tracker = _Tracker(parsed)
         tracker.build()
         self._values = MappingProxyType(tracker.values)
         self._bindings = tuple(tracker.bindings)
+
+    @property
+    def parsed(self) -> ParsedSource:
+        """The parser-owned unit used for point-of-use queries."""
+        return self._parsed
 
     @property
     def bindings(self) -> tuple[Binding, ...]:
@@ -243,10 +252,17 @@ class _Tracker:
         if isinstance(target, ast.Name):
             self._bind(target.id, value, statement, env, scope)
         elif isinstance(target, (ast.Tuple, ast.List)):
-            for part in target.elts:
-                self._target(
-                    part, _unknown(part, "Unpacking is unsupported"), statement, env, scope
+            flat = all(isinstance(part, ast.Name) for part in target.elts)
+            for index, part in enumerate(target.elts):
+                projected = SymbolValue(
+                    ValueKind.UNKNOWN,
+                    part,
+                    reason="Unpacking is unsupported",
+                    unpack_source=value if flat else None,
+                    unpack_index=index if flat else None,
+                    unpack_size=len(target.elts) if flat else None,
                 )
+                self._target(part, projected, statement, env, scope)
         else:
             self._barrier(statement, env, scope, "Attribute/subscript mutation or complex target")
 
