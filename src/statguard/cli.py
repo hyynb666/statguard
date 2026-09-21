@@ -11,6 +11,7 @@ from statguard.context import AnalysisContext
 from statguard.core import RuleRegistry
 from statguard.reporters import render_console, render_json
 from statguard.reporters.models import reaches_threshold
+from statguard.rules import default_registry
 from statguard.scanner import Scanner
 
 
@@ -43,12 +44,25 @@ def main(
         default=None,
         help="Exit 1 at this diagnostic severity or higher",
     )
+    check.add_argument(
+        "--disable-rule",
+        action="append",
+        default=[],
+        metavar="RULE_ID",
+        help="Disable a registered rule (repeatable)",
+    )
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
 
-    scanner = Scanner(Analyzer(registry if registry is not None else RuleRegistry()))
+    selected = registry if registry is not None else default_registry()
+    for rule_id in args.disable_rule:
+        try:
+            selected.disable(rule_id)
+        except KeyError:
+            parser.error(f"Unknown rule ID: {rule_id}")
+    scanner = Scanner(Analyzer(selected))
     try:
         report = scanner.scan(args.path, exclude=tuple(args.exclude))
     except ValueError as error:

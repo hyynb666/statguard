@@ -13,8 +13,10 @@ and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule, and RuleRegistry
 are available as Python APIs. Import aliases and basic assignment/call provenance
 are available through AnalysisContext.symbols. Limited split and transformation
 provenance is available through AnalysisContext.provenance.
-**No statistical or machine learning detection rules are shipped yet.** A clean scan means the scanned syntax was processed; it
-does not establish statistical correctness. No cross-cell data flow, directory
+**ML001 is the first enabled detection rule:** it reports potential preprocessing
+leakage when supported scaler fit_transform output reaches a later train/test
+split. See [ML001](docs/ml001.md) for evidence requirements and limitations.
+A clean scan does not establish statistical correctness. No cross-cell data flow, directory
 configuration file, or Notebook execution history analysis is implemented.
 
 ## Install from this repository
@@ -92,7 +94,7 @@ src/statguard/
   core/                  # Finding, Evidence, Severity, Confidence, Rule, RuleRegistry
   parsers/               # PythonSourceParser and NotebookParser
   reporters/             # Console and JSON rendering
-  rules/                 # no built-in rules yet
+  rules/                 # ML001 and the built-in registry
 ```
 
 The Python parser uses `ast` and keeps original AST nodes and Unicode-aware
@@ -112,7 +114,7 @@ status. Reporters only format those results. See the [Python parser](docs/python
 [reporting](docs/reporting.md) contracts. Symbol resolution handles straight-line
 module and independent function-local statements; outer-scope names, complex
 control flow and runtime types remain unknown. Supported sklearn split outputs
-and explicit StandardScaler transformations have limited provenance tracking; see [the provenance contract](docs/provenance.md).
+and explicit StandardScaler/MinMaxScaler/RobustScaler transformations have limited provenance tracking; see [the provenance contract](docs/provenance.md).
 
 ## Development
 
@@ -130,3 +132,6 @@ defines the product scope and rule acceptance criteria.
 ## License
 
 StatGuard is available under the [MIT License](LICENSE).
+
+Disable the built-in rule with `statguard check analysis.py --disable-rule ML001`.
+Warning findings exit 0 by default; use `--fail-on warning` to exit 1.

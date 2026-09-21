@@ -127,3 +127,10 @@ Issue #8 adds optional flat-unpacking syntax evidence to SymbolValue without
 changing its unknown classification. `SymbolResolver.parsed` exposes the owned
 unit. [The provenance layer](provenance.md) interprets only documented split
 semantics and reuses these versioned bindings; it does not repeat name resolution.
+
+## Evaluation order
+
+Issue #9 adds `evaluation_site(expr)`: immutable scope identity and evaluation
+order within supported straight-line code. Callee and argument evaluation precede
+the enclosing call. Compare orders only in the same scope; unsupported nodes
+return None. AST traversal index and textual position are not execution evidence.

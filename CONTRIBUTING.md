@@ -62,7 +62,7 @@ Follow [the core interface contract](docs/core-interfaces.md). Keep Evidence
 separate from severity and confidence. Preserve Finding's legacy field names and
 constructor order, and distinguish the original Notebook cell index from the
 code-cell ordinal. Use fixture rules to test check/metadata and registry selection
-without adding built-in detections. Cover invalid metadata,
+without mixing statistical decisions into the core interfaces. Cover invalid metadata,
 duplicate IDs, deterministic selection, enable/disable behavior, and analyze-only
 rule compatibility. Registration must not execute the rule's detection method.
 
@@ -113,3 +113,10 @@ separate from proven data sources. Library return semantics belong in the small
 adapter, with official documentation and negative cases for coincident names,
 reassignment, unknown effects and ambiguous argument/output shapes. Never infer
 train/test roles from variable spelling or generic method names.
+
+## ML001 changes
+
+Follow [the ML001 contract](docs/ml001.md). Preserve exact receiver provenance,
+input lineage and same-scope evaluation order. Test safe train-only fitting,
+unrelated inputs, alias/rebinding, unknown state and configuration that disables
+learning. Medium confidence describes static risk, not measured model harm.

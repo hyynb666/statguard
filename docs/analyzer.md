@@ -4,8 +4,8 @@
 read-only view of one successfully parsed Python unit. `statguard.analyzer.Analyzer`
 connects the existing parsers and RuleRegistry, runs enabled rules, and returns
 structured results. The CLI, scanner and reporters wrap this API; see
-[reporting.md](reporting.md). No built-in statistical or machine learning rules
-or cross-unit data-flow analysis are included.
+[reporting.md](reporting.md). The CLI enables [ML001](ml001.md); Analyzer itself still uses the explicitly
+supplied registry. Cross-unit data-flow analysis is not included.
 
 ## Public Python API
 
@@ -123,4 +123,4 @@ Findings. System-level interrupts such as KeyboardInterrupt are not swallowed.
 The framework validates result shape and identity; it cannot prove a rule's
 statistical reasoning, verify every source coordinate, or prevent a trusted
 rule from deliberately executing code. Rule authors must follow AGENTS.md and
-test their own evidence and abstention behavior. This issue adds no detections.
+test their own evidence and abstention behavior. The built-in ML001 implementation is documented separately.

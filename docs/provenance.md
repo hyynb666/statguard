@@ -64,7 +64,7 @@ added. The explicit public API contracts are:
   recorded but their runtime validity is not evaluated.
 - [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html):
   `transform` and `fit_transform` on a receiver with an explicit public
-  `sklearn.preprocessing.StandardScaler()` construction preserve the direct X
+  `sklearn.preprocessing.StandardScaler()`, `MinMaxScaler()` or `RobustScaler()` construction preserve the direct X
   source and its roles. X may be positional or an unambiguous keyword. Other
   arguments are recorded, but y, sample weights and fitted state are not merged
   into X's provenance. Direct constructor chains and receiver aliases work.
@@ -96,8 +96,8 @@ SymbolValue gained optional `unpack_source`, `unpack_index`, `unpack_size`
 syntax evidence. Its existing unknown classification for unpacking is unchanged;
 only the provenance adapter interprets recognized split projections. The resolver
 also exposes its parser-owned `parsed` unit to reject mismatched tracker inputs.
-Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. No
-formal ML/statistical rules or JSON report schema changes are included.
+Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. The provenance layer itself emits no diagnostics. Issue #9 adds [ML001](ml001.md)
+as a separate consumer without changing the JSON report schema.
 
 ## Review robustness
 
