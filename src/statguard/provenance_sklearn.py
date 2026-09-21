@@ -4,6 +4,14 @@ import ast
 
 from statguard.symbols import SymbolValue, ValueKind
 
+SCALER_PATHS = frozenset(
+    {
+        "sklearn.preprocessing.StandardScaler",
+        "sklearn.preprocessing.MinMaxScaler",
+        "sklearn.preprocessing.RobustScaler",
+    }
+)
+
 
 def split_inputs(value: SymbolValue) -> tuple[ast.expr, ...] | None:
     """Recognize only the public sklearn split API and explicit array arguments."""
@@ -24,7 +32,7 @@ def split_inputs(value: SymbolValue) -> tuple[ast.expr, ...] | None:
 
 
 def transformed_input(value: SymbolValue) -> ast.expr | None:
-    """StandardScaler's public contract returns transformed X, not y or fit state.
+    """Supported scalers' public contracts returns transformed X, not y or fit state.
 
     A name such as transform alone is never sufficient. No fit-return-self,
     subclass, pipeline or arbitrary factory type inference is attempted.
@@ -38,15 +46,20 @@ def transformed_input(value: SymbolValue) -> ast.expr | None:
     }:
         return None
     receiver = method.base.origin
-    if (
-        receiver.kind is not ValueKind.CALL
-        or receiver.callee.qualified_name != "sklearn.preprocessing.StandardScaler"
-    ):
+    if receiver.kind is not ValueKind.CALL or receiver.callee.qualified_name not in SCALER_PATHS:
         return None
     node = value.node
-    allowed = {"X", "copy"} if method.attribute == "transform" else {"X", "y", "sample_weight"}
+    standard = receiver.callee.qualified_name == "sklearn.preprocessing.StandardScaler"
+    allowed = {"X"}
+    if method.attribute == "transform" and standard:
+        allowed.add("copy")
+    if method.attribute == "fit_transform":
+        allowed.add("y")
+        if standard:
+            allowed.add("sample_weight")
+    max_args = 2 if method.attribute == "fit_transform" or standard else 1
     if (
-        len(node.args) > 2
+        len(node.args) > max_args
         or any(isinstance(arg, ast.Starred) for arg in node.args)
         or any(kw.arg not in allowed for kw in node.keywords)
         or len({kw.arg for kw in node.keywords}) != len(node.keywords)
@@ -60,3 +73,29 @@ def transformed_input(value: SymbolValue) -> ast.expr | None:
         if node.args
         else next((kw.value for kw in node.keywords if kw.arg == "X"), None)
     )
+
+
+def learns_scaling_parameters(callee: SymbolValue) -> bool:
+    """Require an explicit supported construction with known learning switches."""
+    method = callee.origin
+    if method.kind is not ValueKind.ATTRIBUTE or method.base is None:
+        return False
+    receiver = method.base.origin
+    if receiver.kind is not ValueKind.CALL or receiver.callee.qualified_name not in SCALER_PATHS:
+        return False
+    constructor = receiver.node
+    if constructor.args or any(kw.arg is None for kw in constructor.keywords):
+        return False
+    name = receiver.callee.qualified_name
+    switches = {
+        "sklearn.preprocessing.StandardScaler": ("with_mean", "with_std"),
+        "sklearn.preprocessing.RobustScaler": ("with_centering", "with_scaling"),
+        "sklearn.preprocessing.MinMaxScaler": (),
+    }[name]
+    enabled = dict.fromkeys(switches, True)
+    for kw in constructor.keywords:
+        if kw.arg in enabled:
+            if not isinstance(kw.value, ast.Constant) or type(kw.value.value) is not bool:
+                return False
+            enabled[kw.arg] = kw.value.value
+    return not switches or any(enabled.values())

@@ -10,6 +10,14 @@ from statguard.parsers.models import ParsedSource, SourceLocation
 Scope = ast.Module | ast.FunctionDef | ast.AsyncFunctionDef
 
 
+@dataclass(frozen=True, slots=True)
+class EvaluationSite:
+    """Supported evaluation order within one scope, not invocation history."""
+
+    scope: Scope
+    order: int
+
+
 class ValueKind(StrEnum):
     UNKNOWN = "unknown"
     IMPORT = "import"
@@ -117,6 +125,7 @@ class SymbolResolver:
         tracker = _Tracker(parsed)
         tracker.build()
         self._values = MappingProxyType(tracker.values)
+        self._sites = MappingProxyType(tracker.sites)
         self._bindings = tuple(tracker.bindings)
 
     @property
@@ -136,6 +145,10 @@ class SymbolResolver:
             expression, _unknown(expression, "Outside a supported straight-line scope")
         )
 
+    def evaluation_site(self, expression: ast.expr) -> EvaluationSite | None:
+        """Return the supported evaluation scope/order, or None outside coverage."""
+        return self._sites.get(expression)
+
     def binding_for(self, reference: ast.Name) -> Binding | None:
         """Return the exact binding version read by a Name; None means unbound/unsupported."""
         if not isinstance(reference, ast.Name):
@@ -147,6 +160,7 @@ class _Tracker:
     def __init__(self, parsed: ParsedSource) -> None:
         self.parsed = parsed
         self.values: dict[ast.expr, SymbolValue] = {}
+        self.sites: dict[ast.expr, EvaluationSite] = {}
         self.bindings: list[Binding] = []
         self.functions: list[ast.FunctionDef | ast.AsyncFunctionDef] = []
 
@@ -239,6 +253,7 @@ class _Tracker:
             self._barrier(node, env, scope, "Unsupported expression effects")
             value = _unknown(node, "Unsupported expression")
         self.values[node] = value
+        self.sites[node] = EvaluationSite(scope, len(self.sites))
         return value
 
     def _target(

@@ -1,7 +1,7 @@
 # CLI scan and report contract
 
 Issue #6 connects file discovery and the existing Analyzer to Console and
-JSON output. It adds no built-in detection rules.
+JSON output. Issue #9 adds the default ML001 rule; see [ML001](ml001.md).
 
 ## Python API and scope
 
@@ -11,7 +11,9 @@ notices, aggregate Findings and errors, and the selected-rule count.
 `statguard.reporters.render_console(report)` and `render_json(report)` are
 pure formatters. Neither invokes parsers or rules. CLI `main(argv=None,
 *, registry=None)` accepts an explicit registry for trusted integrations and
-tests; the installed CLI starts with an empty registry. It never loads rules
+tests; the installed CLI uses a fresh default registry containing ML001.
+An explicit registry is used exactly as supplied. --disable-rule ML001 disables
+the built-in rule; unknown rule IDs are invocation errors. It never loads rules
 from submitted source or Notebook content.
 
 Directory traversal scans `.py` and `.ipynb` files in a stable path order.
