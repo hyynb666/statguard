@@ -134,7 +134,28 @@ def imputer_semantics(callee: SymbolValue) -> str | None:
     if name == "sklearn.impute.KNNImputer":
         return "neighbor reference samples"
     if name == "sklearn.impute.IterativeImputer":
-        return "iteratively fitted estimation models"
+        options = {keyword.arg: keyword.value for keyword in constructor.keywords}
+        max_iter = options.get("max_iter")
+        if max_iter is not None:
+            if not isinstance(max_iter, ast.Constant) or type(max_iter.value) is not int:
+                return None
+            if max_iter.value < 0:
+                return None
+        initial = options.get("initial_strategy")
+        if initial is not None and (
+            not isinstance(initial, ast.Constant) or not isinstance(initial.value, str)
+        ):
+            return None
+        initial_strategy = "mean" if initial is None else initial.value
+        if max_iter is None or max_iter.value > 0:
+            if initial_strategy not in {"mean", "median", "most_frequent", "constant"}:
+                return None
+            return "iteratively fitted estimation models"
+        return {
+            "mean": "initial column means",
+            "median": "initial column medians",
+            "most_frequent": "initial most-frequent column values",
+        }.get(initial_strategy)
 
     strategy = "mean"
     for keyword in constructor.keywords:

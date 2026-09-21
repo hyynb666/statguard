@@ -66,6 +66,37 @@ def test_supported_imputers_have_precise_statistical_explanation(name, options, 
 
 
 @pytest.mark.parametrize(
+    ("options", "mechanism"),
+    [
+        ("max_iter=0", "initial column means"),
+        ("max_iter=0, initial_strategy='median'", "initial column medians"),
+        (
+            "max_iter=0, initial_strategy='most_frequent'",
+            "initial most-frequent column values",
+        ),
+    ],
+)
+def test_iterative_zero_rounds_use_only_known_data_dependent_initial_strategy(options, mechanism):
+    findings = analyze(risk("IterativeImputer", options))
+    assert len(findings) == 1
+    assert mechanism in findings[0].explanation
+    assert "iteratively fitted estimation models" not in findings[0].explanation
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        "max_iter=0, initial_strategy='constant'",
+        "max_iter=rounds",
+        "initial_strategy=strategy",
+        "max_iter=-1",
+    ],
+)
+def test_iterative_constant_initial_only_and_unknown_iteration_state_abstain(options):
+    assert analyze(risk("IterativeImputer", options)) == ()
+
+
+@pytest.mark.parametrize(
     "options",
     [
         'strategy="constant", fill_value=-1',
@@ -185,6 +216,19 @@ def test_possible_configuration_mutation_abstains(operation):
         + code("z=i.fit_transform(X)", "a,b=split(z)")
     )
     assert analyze(source) == ()
+
+
+def test_long_alias_chain_is_iterative_and_exact_duplicates_collapse():
+    aliases = [f"a{index}=a{index - 1}" for index in range(1, 1200)]
+    source = imports() + code(
+        "i=I()",
+        "a0=i.fit_transform(X)",
+        *aliases,
+        "x1,x2,x3,x4=split(a1199,a1199)",
+    )
+    findings = analyze(source)
+    assert len(findings) == 1
+    assert findings[0].line == 4
 
 
 def test_multiple_splits_issues_and_deduplication_are_deterministic():
