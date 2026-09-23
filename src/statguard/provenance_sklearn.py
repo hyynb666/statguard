@@ -1,6 +1,7 @@
 """Small, explicit library contracts; never import the analyzed libraries."""
 
 import ast
+from collections.abc import Callable
 
 from statguard.symbols import SymbolValue, ValueKind
 
@@ -18,7 +19,24 @@ IMPUTER_PATHS = frozenset(
         "sklearn.impute.IterativeImputer",
     }
 )
-TRANSFORMER_PATHS = SCALER_PATHS | IMPUTER_PATHS
+FEATURE_SELECTOR_PATHS = frozenset(
+    {
+        "sklearn.feature_selection.SelectKBest",
+        "sklearn.feature_selection.SelectPercentile",
+        "sklearn.feature_selection.VarianceThreshold",
+    }
+)
+SUPERVISED_SCORE_PATHS = frozenset(
+    {
+        "sklearn.feature_selection.chi2",
+        "sklearn.feature_selection.f_classif",
+        "sklearn.feature_selection.f_regression",
+        "sklearn.feature_selection.mutual_info_classif",
+        "sklearn.feature_selection.mutual_info_regression",
+        "sklearn.feature_selection.r_regression",
+    }
+)
+TRANSFORMER_PATHS = SCALER_PATHS | IMPUTER_PATHS | FEATURE_SELECTOR_PATHS
 
 
 def split_inputs(value: SymbolValue) -> tuple[ast.expr, ...] | None:
@@ -170,3 +188,84 @@ def imputer_semantics(callee: SymbolValue) -> str | None:
         "median": "column medians",
         "most_frequent": "most-frequent column values",
     }.get(strategy)
+
+
+def is_feature_selector(callee: SymbolValue) -> bool:
+    """Recognize a method receiver constructed from an exact supported selector."""
+    method = callee.origin
+    if method.kind is not ValueKind.ATTRIBUTE or method.base is None:
+        return False
+    receiver = method.base.origin
+    return (
+        receiver.kind is ValueKind.CALL and receiver.callee.qualified_name in FEATURE_SELECTOR_PATHS
+    )
+
+
+def feature_selector_semantics(
+    callee: SymbolValue,
+    call: ast.Call,
+    resolve: Callable[[ast.expr], SymbolValue],
+) -> str | None:
+    """Describe a proven supported selector fit, or abstain on unknown evidence."""
+    if not is_feature_selector(callee):
+        return None
+    method = callee.origin
+    if method.attribute != "fit_transform":
+        return None
+    receiver = method.base.origin
+    name = receiver.callee.qualified_name
+    constructor = receiver.node
+    keyword_names = [keyword.arg for keyword in constructor.keywords]
+    if (
+        constructor.args
+        or any(keyword is None for keyword in keyword_names)
+        or len(set(keyword_names)) != len(keyword_names)
+    ):
+        return None
+    options = {keyword.arg: keyword.value for keyword in constructor.keywords}
+
+    if name == "sklearn.feature_selection.VarianceThreshold":
+        if any(keyword not in {"threshold"} for keyword in keyword_names):
+            return None
+        threshold = options.get("threshold")
+        if threshold is not None and (
+            not isinstance(threshold, ast.Constant)
+            or type(threshold.value) not in {int, float}
+            or threshold.value < 0
+        ):
+            return None
+        return "feature variances estimated from all fitting samples"
+
+    parameter = "k" if name == "sklearn.feature_selection.SelectKBest" else "percentile"
+    allowed = {"score_func", parameter}
+    if any(keyword not in allowed for keyword in keyword_names):
+        return None
+    selection = options.get(parameter)
+    if selection is not None:
+        if not isinstance(selection, ast.Constant) or type(selection.value) is not int:
+            return None
+        if parameter == "k" and selection.value <= 0:
+            return None
+        if parameter == "percentile" and not 0 < selection.value < 100:
+            return None
+    if parameter == "k" and isinstance(selection, ast.Constant) and selection.value == "all":
+        return None
+
+    score_node = options.get("score_func")
+    score_name = (
+        "sklearn.feature_selection.f_classif"
+        if score_node is None
+        else resolve(score_node).qualified_name
+    )
+    if score_name not in SUPERVISED_SCORE_PATHS:
+        return None
+
+    target = (
+        call.args[1]
+        if len(call.args) >= 2
+        else next((keyword.value for keyword in call.keywords if keyword.arg == "y"), None)
+    )
+    if target is None or (isinstance(target, ast.Constant) and target.value is None):
+        return None
+    short_name = score_name.rsplit(".", 1)[-1]
+    return f"supervised {short_name} scores computed from features and target labels"

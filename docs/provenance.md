@@ -72,6 +72,10 @@ added. The explicit public API contracts are:
   Provenance records the relationship independently of whether the constructor
   configuration is data-dependent; [ML002](ml002.md) applies stricter strategy
   evidence before issuing a Finding.
+- [Feature selection](ml003.md): explicit public `SelectKBest()`,
+  `SelectPercentile()`, and `VarianceThreshold()` transform calls preserve
+  their direct X source. ML003 separately requires known selector semantics,
+  labels for supported supervised scoring, and pre-split order.
 
 For these transformations, X may be positional or an unambiguous keyword.
 Other arguments are recorded, but y, sample weights and fitted state are not
@@ -106,7 +110,7 @@ only the provenance adapter interprets recognized split projections. The resolve
 also exposes its parser-owned `parsed` unit to reject mismatched tracker inputs.
 Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. The
 provenance layer itself emits no diagnostics. [ML001](ml001.md) and
-[ML002](ml002.md) consume these facts without changing the JSON report schema.
+[ML002](ml002.md) and [ML003](ml003.md) consume these facts without changing the JSON report schema.
 
 ## Review robustness
 
