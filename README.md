@@ -13,11 +13,11 @@ and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule, and RuleRegistry
 are available as Python APIs. Import aliases and basic assignment/call provenance
 are available through AnalysisContext.symbols. Limited split and transformation
 provenance is available through AnalysisContext.provenance.
-**ML001 and ML002 are enabled detection rules.** ML001 reports potential scaler
-preprocessing leakage; ML002 reports potential data-dependent imputation leakage
-when the supported fit_transform output reaches a later train/test split. See
-[ML001](docs/ml001.md) and [ML002](docs/ml002.md) for evidence requirements and
-limitations.
+**ML001, ML002, and ML003 are enabled detection rules.** They report supported
+scaler preprocessing, data-dependent imputation, and feature-selection outputs
+that reach a later train/test split. See [ML001](docs/ml001.md),
+[ML002](docs/ml002.md), and [ML003](docs/ml003.md) for evidence requirements
+and limitations.
 A clean scan does not establish statistical correctness. No cross-cell data flow, directory
 configuration file, or Notebook execution history analysis is implemented.
 
@@ -96,7 +96,7 @@ src/statguard/
   core/                  # Finding, Evidence, Severity, Confidence, Rule, RuleRegistry
   parsers/               # PythonSourceParser and NotebookParser
   reporters/             # Console and JSON rendering
-  rules/                 # ML001, ML002, and the built-in registry
+  rules/                 # ML001–ML003 and the built-in registry
 ```
 
 The Python parser uses `ast` and keeps original AST nodes and Unicode-aware
@@ -116,7 +116,7 @@ status. Reporters only format those results. See the [Python parser](docs/python
 [reporting](docs/reporting.md) contracts. Symbol resolution handles straight-line
 module and independent function-local statements; outer-scope names, complex
 control flow and runtime types remain unknown. Supported sklearn split outputs
-and explicit supported scaler/imputer transformations have limited provenance
+and explicit supported scaler/imputer/feature-selector transformations have limited provenance
 tracking; see [the provenance contract](docs/provenance.md).
 
 ## Development
@@ -136,5 +136,5 @@ defines the product scope and rule acceptance criteria.
 
 StatGuard is available under the [MIT License](LICENSE).
 
-Disable rules independently with `--disable-rule ML001` or `--disable-rule ML002`.
+Disable ML001, ML002, or ML003 independently with `--disable-rule RULE_ID`.
 Warning findings exit 0 by default; use `--fail-on warning` to exit 1.

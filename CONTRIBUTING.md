@@ -128,3 +128,11 @@ construction, proven fit_transform output lineage and same-scope order. Preserve
 the distinction between data-dependent SimpleImputer strategies, fixed constant
 replacement, KNN reference samples and Iterative fitted models. Dynamic strategy
 semantics must cause conservative abstention.
+
+## ML003 changes
+
+Follow [the ML003 contract](docs/ml003.md). Require an exact supported sklearn
+feature-selector construction, proven fit_transform output lineage, and
+same-scope order. Supervised selector findings need a known score function and
+an explicit target; VarianceThreshold must remain described as an unsupervised
+variance operation. Unknown scoring semantics require abstention.

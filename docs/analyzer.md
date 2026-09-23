@@ -124,4 +124,4 @@ Findings. System-level interrupts such as KeyboardInterrupt are not swallowed.
 The framework validates result shape and identity; it cannot prove a rule's
 statistical reasoning, verify every source coordinate, or prevent a trusted
 rule from deliberately executing code. Rule authors must follow AGENTS.md and
-test their own evidence and abstention behavior. The built-in [ML001](ml001.md) and [ML002](ml002.md) implementations are documented separately.
+test their own evidence and abstention behavior. The built-in [ML001](ml001.md), [ML002](ml002.md), and [ML003](ml003.md) implementations are documented separately.

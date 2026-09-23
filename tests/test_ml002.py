@@ -297,7 +297,7 @@ def test_notebook_same_cell_detected_cross_cell_abstains_and_output_ignored():
 
 def test_default_registry_and_rule_disabling_are_independent():
     registry = default_registry()
-    assert [rule.rule_id for rule in registry.iter_enabled()] == ["ML001", "ML002"]
+    assert [rule.rule_id for rule in registry.iter_enabled()] == ["ML001", "ML002", "ML003"]
     registry.disable("ML002")
     result = Analyzer(registry).analyze_source(risk())
     assert all(f.rule_id != "ML002" for f in result.findings)
