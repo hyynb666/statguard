@@ -16,10 +16,20 @@ class ML001(Rule[AnalysisContext]):
         findings: list[Finding] = []
         for match in find_pre_split_transforms(context, learns_scaling_parameters):
             value, split = match.transform, match.split
-            location = value.location
+            fit = match.fit or value
+            location = fit.location
             split_location = f"{split.location.path}:{split.location.line}:{split.location.column}"
+            transform_location = (
+                f"{value.location.path}:{value.location.line}:{value.location.column}"
+            )
             if context.cell_index is not None:
                 split_location += f" (Notebook cell_index={context.cell_index})"
+                transform_location += f" (Notebook cell_index={context.cell_index})"
+            transform_evidence = (
+                f" The fitted instance later transformed the same input at {transform_location}."
+                if match.fit is not None
+                else ""
+            )
             findings.append(
                 Finding(
                     rule_id=self.rule_id,
@@ -33,8 +43,9 @@ class ML001(Rule[AnalysisContext]):
                     evidence=Evidence.POTENTIAL_STATISTICAL_RISK,
                     message="Potential preprocessing leakage before train/test split.",
                     explanation=(
-                        "A known sklearn scaler's fit_transform output flows into "
-                        f"train_test_split at {split_location}, after fitting in the same scope. "
+                        "A known sklearn scaler's fitted transformation output flows into "
+                        f"train_test_split at {split_location}, after fitting in the same scope."
+                        f"{transform_evidence} "
                         "Information from the eventual test subset may influence preprocessing "
                         "parameters. This static pattern does not establish actual leakage or "
                         "measured model performance."

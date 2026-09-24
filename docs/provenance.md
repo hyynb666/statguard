@@ -78,11 +78,29 @@ added. The explicit public API contracts are:
   labels for supported supervised scoring, and pre-split order.
 
 For these transformations, X may be positional or an unambiguous keyword.
-Other arguments are recorded, but y, sample weights and fitted state are not
-merged into X's provenance. Direct constructor chains and receiver aliases work.
+Other arguments are recorded, but y and sample weights are not merged into X's
+data lineage. Direct constructor chains and receiver aliases work.
+
+`AnalysisContext.provenance.fitted_transforms` exposes immutable
+`FittedTransform` evidence for supported separate `.fit(X)`/`.transform(X)`
+sequences. Each record contains a deterministic constructor-based `instance_id`,
+fit and transform `DataOrigin` records, the fit callee, and their shared scope
+and evaluation sites. The tracker uses the existing SymbolResolver to follow
+receiver aliases and requires both calls to read the same stable input binding
+version (including simple aliases). Equal unbound variable spellings are not
+accepted as source evidence. Only ML001–ML003 apply their own statistical
+semantics to this shared evidence.
+
+State is rebuilt for each supported straight-line scope. A later `.fit` replaces
+the earlier fit evidence. Passing the instance to another call or invoking an
+unmodeled method invalidates its state for that scope. Unsupported signatures,
+reassigned inputs, branches, loops, unknown mutations, and missing fit evidence
+do not yield a fitted-transform relationship. This bounded syntax model is not
+a runtime object tracker and does not inspect called code or method dispatch.
 
 This small allowlist is deliberate. Other transformers, subclasses, factories,
-private import paths, pipelines and `fit(...).transform(...)` are not inferred.
+private import paths, pipelines and chained fit-returning expressions such as
+`fit(...).transform(...)` are not inferred.
 Supporting another API requires a documented contract and positive/negative
 fixtures. A supported method does not prove the estimator was fitted correctly.
 Monkey-patching inside opaque imported functions and nonstandard import hooks
