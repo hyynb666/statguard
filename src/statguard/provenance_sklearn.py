@@ -37,6 +37,14 @@ SUPERVISED_SCORE_PATHS = frozenset(
     }
 )
 TRANSFORMER_PATHS = SCALER_PATHS | IMPUTER_PATHS | FEATURE_SELECTOR_PATHS
+ESTIMATOR_PATHS = frozenset(
+    {
+        "sklearn.linear_model.LogisticRegression",
+        "sklearn.linear_model.LinearRegression",
+        "sklearn.ensemble.RandomForestClassifier",
+        "sklearn.ensemble.RandomForestRegressor",
+    }
+)
 
 
 def split_inputs(value: SymbolValue) -> tuple[ast.expr, ...] | None:
@@ -55,6 +63,50 @@ def split_inputs(value: SymbolValue) -> tuple[ast.expr, ...] | None:
     ):
         return None
     return tuple(node.args)
+
+
+def estimator_fit_inputs(
+    callee: SymbolValue, call: ast.Call
+) -> tuple[tuple[str, ast.expr], ...] | None:
+    """Map supported estimator.fit feature/label inputs to their expressions."""
+    method = callee.origin
+    if method.kind is not ValueKind.ATTRIBUTE or method.attribute != "fit" or method.base is None:
+        return None
+    estimator = method.base.origin
+    if (
+        estimator.kind is not ValueKind.CALL
+        or estimator.callee.qualified_name not in ESTIMATOR_PATHS
+    ):
+        return None
+    if len(call.args) > 2 or any(isinstance(arg, ast.Starred) for arg in call.args):
+        return None
+    allowed = {"X", "y", "sample_weight"}
+    names = [keyword.arg for keyword in call.keywords]
+    if (
+        any(name not in allowed for name in names)
+        or len(set(names)) != len(names)
+        or any(name is None for name in names)
+    ):
+        return None
+    if (call.args and "X" in names) or (len(call.args) > 1 and "y" in names):
+        return None
+    features = (
+        call.args[0]
+        if call.args
+        else next((keyword.value for keyword in call.keywords if keyword.arg == "X"), None)
+    )
+    labels = (
+        call.args[1]
+        if len(call.args) > 1
+        else next((keyword.value for keyword in call.keywords if keyword.arg == "y"), None)
+    )
+    if features is None:
+        return None
+    return tuple(
+        (name, value)
+        for name, value in (("features", features), ("labels", labels))
+        if value is not None
+    )
 
 
 def transformed_input(value: SymbolValue) -> ast.expr | None:

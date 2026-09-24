@@ -331,7 +331,12 @@ def test_notebook_same_cell_detected_cross_cell_abstains_and_output_ignored():
 
 def test_default_registry_and_rule_disabling_are_independent():
     registry = default_registry()
-    assert [rule.rule_id for rule in registry.iter_enabled()] == ["ML001", "ML002", "ML003"]
+    assert [rule.rule_id for rule in registry.iter_enabled()] == [
+        "ML001",
+        "ML002",
+        "ML003",
+        "ML004",
+    ]
     registry.disable("ML003")
     result = Analyzer(registry).analyze_source(risk())
     assert all(f.rule_id != "ML003" for f in result.findings)
@@ -354,6 +359,7 @@ def test_default_registry_and_rule_disabling_are_independent():
         ("ML001", ["ML002", "ML003"]),
         ("ML002", ["ML001", "ML003"]),
         ("ML003", ["ML001", "ML002"]),
+        ("ML004", ["ML001", "ML002", "ML003"]),
     ]:
         registry = default_registry()
         registry.disable(disabled)
