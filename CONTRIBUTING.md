@@ -86,11 +86,14 @@ and unknown origins; recorded calls do not establish input/output lineage.
 
 ## Scanner and reporter contributions
 
-Follow [the report contract](docs/reporting.md). Preserve stable traversal and
+Follow the [report contract](docs/reporting.md) and [HTML report safety guide](docs/html-report.md).
+Preserve stable traversal and
 complete, partial, and failed statuses. Keep JSON stdout standalone and never
 serialize AST, source, Notebook outputs, or arbitrary rule exception text.
 Test file/Notebook/directory scans, exclusions, empty inputs, explicit errors,
-exit codes, output writes, and no-execution behavior with test-only rules.
+exit codes, output writes, HTML escaping, and no-execution behavior with test-only
+rules. HTML dynamic content must always be escaped; do not add remote resources
+or render Notebook outputs.
 Review any proposed JSON schema or exit-code change before release.
 
 ## Review workflow

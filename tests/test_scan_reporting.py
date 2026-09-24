@@ -317,6 +317,106 @@ def test_output_report_contains_partial_failure(tmp_path: Path, capsys) -> None:
     assert payload["analysis_errors"][0]["code"] == "syntax_error"
 
 
+def test_html_cli_output_threshold_disable_and_notebook_safety(tmp_path: Path, capsys) -> None:
+    source = tmp_path / "risk.py"
+    source.write_text("dangerous_call()\n", encoding="utf-8")
+    output = tmp_path / "nested" / "report.html"
+    rules = registry(FixtureRule())
+
+    assert (
+        main(["check", str(source), "--format", "html", "--output", str(output)], registry=rules)
+        == 0
+    )
+    assert capsys.readouterr().out == ""
+    rendered = output.read_text(encoding="utf-8")
+    assert "FIX001" in rendered and "dangerous_call" in rendered
+    assert "Risk explanation" in rendered and "Suggested action" in rendered
+
+    assert (
+        main(
+            [
+                "check",
+                str(source),
+                "--format",
+                "html",
+                "--output",
+                str(output),
+                "--fail-on",
+                "warning",
+            ],
+            registry=rules,
+        )
+        == 1
+    )
+    assert "FIX001" in output.read_text(encoding="utf-8")
+    capsys.readouterr()
+
+    disabled = registry(FixtureRule())
+    assert (
+        main(
+            ["check", str(source), "--format", "html", "--disable-rule", "FIX001"],
+            registry=disabled,
+        )
+        == 0
+    )
+    empty_html = capsys.readouterr().out
+    assert "Findings (0)" in empty_html
+    assert "FIX001" not in empty_html
+
+    marker = tmp_path / "executed"
+    book = tmp_path / "book.ipynb"
+    book.write_text(
+        notebook(
+            cell("# ordinary Python"),
+            cell(
+                "source_call()",
+                outputs=[{"data": {"text/html": f"<script>open('{marker}','w')</script>"}}],
+            ),
+        ),
+        encoding="utf-8",
+    )
+    notebook_output = tmp_path / "book.html"
+    assert (
+        main(
+            ["check", str(book), "--format", "html", "--output", str(notebook_output)],
+            registry=registry(FixtureRule()),
+        )
+        == 0
+    )
+    notebook_html = notebook_output.read_text(encoding="utf-8")
+    assert "source_call" in notebook_html
+    assert "<script>open(" not in notebook_html
+    assert not marker.exists()
+
+
+def test_html_cli_invalid_output_path_reports_error(tmp_path: Path, capsys) -> None:
+    source = tmp_path / "code.py"
+    source.write_text("x = 1", encoding="utf-8")
+    assert (
+        main(
+            ["check", str(source), "--format", "html", "--output", str(tmp_path)],
+            registry=registry(),
+        )
+        == 2
+    )
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "cannot write report" in captured.err
+
+
+def test_html_stdout_is_a_complete_document_without_status_text(tmp_path: Path, capsys) -> None:
+    source = tmp_path / "plain.py"
+    source.write_text("value = 1\n", encoding="utf-8")
+
+    assert main(["check", str(source), "--format", "html"], registry=registry()) == 0
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out.startswith("<!doctype html>")
+    assert captured.out.rstrip().endswith("</html>")
+    assert "StatGuard Analysis Report" in captured.out
+
+
 def test_console_handles_unicode_path(tmp_path: Path) -> None:
     target = tmp_path / "分析.py"
     target.write_text("x = 1", encoding="utf-8")

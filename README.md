@@ -49,6 +49,7 @@ statguard check experiment.ipynb
 statguard check ./project
 statguard check analysis.py --format json
 statguard check analysis.py --format json --output reports/scan.json
+statguard check ./project --format html --output reports/scan.html
 statguard check ./project --exclude generated --exclude scratch/bad.py
 statguard check ./project --fail-on warning
 ```
@@ -62,14 +63,17 @@ produces a notice rather than a claim of statistical safety.
 
 `--output` creates missing parent directories and writes the selected report
 format as UTF-8. It refuses to overwrite a scanned input. Without `--output`,
-the report goes to stdout; JSON mode writes only valid JSON to stdout. Failed
-report writes are reported on stderr.
+the report goes to stdout; JSON mode writes only valid JSON, and HTML mode
+writes a complete HTML document. Failed report writes are reported on stderr.
 
 Console output shows each Finding's location, severity, rule ID, evidence,
-risk, and suggested fix, then file, diagnostic and scan-error totals. The JSON
-schema is versioned and documented in [reporting.md](docs/reporting.md).
+risk, and suggested fix, then file, diagnostic and scan-error totals. JSON
+uses the documented schema. HTML creates a self-contained, offline report with
+escaped Finding text and scan status; it uses no scripts or remote resources.
 Parser errors, unsupported Notebook cells, and rule errors are distinct from
-Findings. Scanning continues through other files and valid Notebook cells.
+Findings. See [reporting](docs/reporting.md) and the
+[HTML report guide](docs/html-report.md). Scanning continues through other
+files and valid Notebook cells.
 
 Exit codes:
 
