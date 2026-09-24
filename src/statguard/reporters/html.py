@@ -1,11 +1,56 @@
 """Self-contained, offline HTML rendering for completed scan reports."""
 
+import base64
+import hashlib
 from collections import Counter
 from html import escape
 
 from statguard import __version__
+from statguard.core import Severity
 from statguard.reporters.models import safe_error_message, summary
 from statguard.scanner import ScanReport
+
+_INTERACTION_SCRIPT = """(() => {
+"use strict";
+const form = document.getElementById("finding-filters");
+if (!form) return;
+const ruleSelect = document.getElementById("rule-filter");
+const severitySelect = document.getElementById("severity-filter");
+const searchInput = document.getElementById("finding-search");
+const visibleCount = document.getElementById("visible-count");
+const noMatches = document.getElementById("no-matches");
+const findings = Array.from(document.querySelectorAll(".finding"));
+const update = () => {
+  const rule = ruleSelect.value;
+  const severity = severitySelect.value;
+  const query = searchInput.value.trim().toLowerCase();
+  let visible = 0;
+  for (const finding of findings) {
+    const findingRule = finding.querySelector(".finding-rule").textContent.trim();
+    const findingSeverity = finding.querySelector(".finding-severity").textContent.trim();
+    const matches = (!rule || findingRule === rule)
+      && (!severity || findingSeverity === severity)
+      && (!query || [
+        finding.querySelector(".location").textContent,
+        findingRule,
+        finding.querySelector(".finding-message").textContent
+      ].some((value) => value.toLowerCase().includes(query)));
+    finding.hidden = !matches;
+    if (matches) visible += 1;
+  }
+  visibleCount.textContent = "Showing " + visible + " of " + findings.length + " findings";
+  noMatches.hidden = visible !== 0;
+};
+form.addEventListener("input", update);
+form.addEventListener("change", update);
+form.addEventListener("submit", (event) => event.preventDefault());
+form.addEventListener("reset", () => window.setTimeout(update, 0));
+update();
+})();
+"""
+_SCRIPT_HASH = base64.b64encode(
+    hashlib.sha256(_INTERACTION_SCRIPT.encode("utf-8")).digest()
+).decode("ascii")
 
 
 def _text(value: object) -> str:
@@ -56,6 +101,39 @@ def render_html(report: ScanReport) -> str:
         or '<tr><td colspan="2" class="muted">No rule findings.</td></tr>'
     )
 
+    rule_options = "\n".join(
+        f'<option value="{_text(rule_id)}">{_text(rule_id)}</option>' for rule_id in sorted(rules)
+    )
+    observed_severities = {finding.severity for finding in findings}
+    severity_options = "\n".join(
+        f'<option value="{_text(severity.value)}">{_text(severity.value)}</option>'
+        for severity in Severity
+        if severity in observed_severities
+    )
+    filter_controls = (
+        f"""<form id="finding-filters" class="filters">
+        <label for="rule-filter">Rule</label>
+        <select id="rule-filter" name="rule">
+          <option value="">All rules</option>{rule_options}
+        </select>
+        <label for="severity-filter">Severity</label>
+        <select id="severity-filter" name="severity">
+          <option value="">All severities</option>{severity_options}
+        </select>
+        <label for="finding-search">Search path, rule, or description</label>
+        <input id="finding-search" name="search" type="search" autocomplete="off">
+        <button type="reset">Clear filters</button>
+      </form>
+      <p id="visible-count" class="muted" aria-live="polite">
+        Showing {len(findings)} of {len(findings)} findings
+      </p>
+      <p id="no-matches" class="empty" hidden>
+        当前筛选条件下没有匹配的 Finding。
+      </p>"""
+        if findings
+        else '<p class="muted">No findings to filter.</p>'
+    )
+
     file_rows = (
         "\n".join(
             "<tr>"
@@ -73,19 +151,23 @@ def render_html(report: ScanReport) -> str:
     for item in findings:
         location = _text(_location(item.path, item.cell_index, item.line, item.column))
         finding_cards.append(
-            '<article class="finding">'
-            '<header class="finding-head">'
-            f'<span class="rule">{_text(item.rule_id)}</span>'
-            f'<span class="severity severity-{_text(item.severity.value)}">'
+            '<details class="finding">'
+            '<summary class="finding-summary">'
+            '<span class="finding-head">'
+            f'<span class="rule finding-rule">{_text(item.rule_id)}</span>'
+            f'<span class="severity severity-{_text(item.severity.value)} finding-severity">'
             f"{_text(item.severity.value)}</span>"
             f'<span class="confidence">Confidence: {_text(item.confidence.value)}</span>'
-            "</header>"
-            f'<p class="location">{location}</p>'
-            f"<h3>{_text(item.message)}</h3>"
+            "</span>"
+            f'<span class="location">{location}</span>'
+            f'<span class="finding-message">{_text(item.message)}</span>'
+            "</summary>"
+            '<div class="finding-detail">'
             f'<p class="evidence">Evidence: {_text(item.evidence.value)}</p>'
             f"<section><h4>Risk explanation</h4><p>{_text(item.explanation)}</p></section>"
             f"<section><h4>Suggested action</h4><p>{_text(item.suggestion)}</p></section>"
-            "</article>"
+            "</div>"
+            "</details>"
         )
     if not finding_cards:
         finding_cards.append(
@@ -130,7 +212,9 @@ def render_html(report: ScanReport) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"
+        content="default-src 'none'; script-src 'sha256-{_SCRIPT_HASH}';
+                 style-src 'unsafe-inline'; object-src 'none'; base-uri 'none';
+                 form-action 'none'"
   >
   <title>StatGuard Analysis Report</title>
   <style>
@@ -173,7 +257,19 @@ def render_html(report: ScanReport) -> str:
     .status-partial {{ color: var(--amber); background: #fff6dd; }}
     .status-failed {{ color: var(--red); background: #fff1f1; }}
     .finding {{ padding: 1.1rem 1.2rem; margin: .9rem 0; border-left: 5px solid var(--blue); }}
+    .finding-summary {{ display: grid; gap: .5rem; cursor: pointer; }}
     .finding-head {{ display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; }}
+    .finding-message {{ font-weight: 650; overflow-wrap: anywhere; }}
+    .finding-detail {{ padding-top: .9rem; }}
+    .filters {{ display: grid; grid-template-columns: auto minmax(8rem, 1fr) auto
+      minmax(8rem, 1fr) auto minmax(10rem, 2fr) auto; align-items: center; gap: .55rem; }}
+    .filters label {{ color: var(--muted); font-size: .9rem; }}
+    .filters select, .filters input, .filters button {{ min-width: 0; min-height: 2.4rem;
+      padding: .4rem .55rem; border: 1px solid var(--line); border-radius: 7px;
+      background: #fff; color: var(--ink); font: inherit; }}
+    .filters button {{ cursor: pointer; white-space: nowrap; }}
+    .filters :focus-visible, .finding-summary:focus-visible {{ outline: 3px solid #4b90c0;
+      outline-offset: 2px; }}
     .location {{ color: var(--muted); overflow-wrap: anywhere;
       font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .9rem; }}
     .evidence {{ color: var(--muted); font-size: .9rem; }}
@@ -184,6 +280,7 @@ def render_html(report: ScanReport) -> str:
     @media (max-width: 600px) {{
       main {{ width: min(100% - 1rem, 1120px); margin-top: 1rem; }}
       .panel {{ padding: .9rem; }} th, td {{ padding: .45rem; }}
+      .filters {{ grid-template-columns: 1fr; }}
     }}
   </style>
 </head>
@@ -224,6 +321,7 @@ def render_html(report: ScanReport) -> str:
     </section>
     <section class="panel">
       <h2>Findings ({len(findings)})</h2>
+      {filter_controls}
       {"".join(finding_cards)}
     </section>
     <section class="panel">
@@ -237,6 +335,7 @@ def render_html(report: ScanReport) -> str:
     <footer>Absence of findings does not establish that code is statistically
       correct or free of risk. This static report contains no external resources.</footer>
   </main>
+  <script>{_INTERACTION_SCRIPT}</script>
 </body>
 </html>
 """

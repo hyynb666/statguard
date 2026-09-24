@@ -64,12 +64,16 @@ produces a notice rather than a claim of statistical safety.
 `--output` creates missing parent directories and writes the selected report
 format as UTF-8. It refuses to overwrite a scanned input. Without `--output`,
 the report goes to stdout; JSON mode writes only valid JSON, and HTML mode
-writes a complete HTML document. Failed report writes are reported on stderr.
+writes a complete HTML document. HTML provides rule/severity filters and
+case-insensitive search over finding paths, rule IDs, and messages. Findings
+remain expandable without JavaScript. Failed report writes are reported on
+stderr.
 
 Console output shows each Finding's location, severity, rule ID, evidence,
 risk, and suggested fix, then file, diagnostic and scan-error totals. JSON
 uses the documented schema. HTML creates a self-contained, offline report with
-escaped Finding text and scan status; it uses no scripts or remote resources.
+escaped Finding text and scan status; it uses a fixed local filter script
+pinned by a CSP hash and no remote resources.
 Parser errors, unsupported Notebook cells, and rule errors are distinct from
 Findings. See [reporting](docs/reporting.md) and the
 [HTML report guide](docs/html-report.md). Scanning continues through other

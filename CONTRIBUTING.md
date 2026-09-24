@@ -92,8 +92,9 @@ complete, partial, and failed statuses. Keep JSON stdout standalone and never
 serialize AST, source, Notebook outputs, or arbitrary rule exception text.
 Test file/Notebook/directory scans, exclusions, empty inputs, explicit errors,
 exit codes, output writes, HTML escaping, and no-execution behavior with test-only
-rules. HTML dynamic content must always be escaped; do not add remote resources
-or render Notebook outputs.
+rules. HTML dynamic content must always be escaped; interactive scripts must
+be fixed code pinned by a CSP hash and must not interpolate report content.
+Do not add remote resources or render Notebook outputs.
 Review any proposed JSON schema or exit-code change before release.
 
 ## Review workflow

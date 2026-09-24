@@ -1,5 +1,7 @@
 """Offline HTML report rendering and escaping guarantees."""
 
+import base64
+import hashlib
 from html.parser import HTMLParser
 
 from statguard.analyzer import AnalysisError, AnalysisErrorStage, AnalysisResult
@@ -13,17 +15,44 @@ class StructureInspector(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
         self.scripts = 0
+        self.script_text: list[str] = []
+        self.in_script = False
         self.remote_urls: list[str] = []
         self.event_attributes: list[str] = []
+        self.details = 0
+        self.open_details = 0
+        self.summaries = 0
+        self.csp = ""
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag == "script":
             self.scripts += 1
+            self.in_script = True
+        if tag == "details":
+            self.details += 1
+            if any(name == "open" for name, _ in attrs):
+                self.open_details += 1
+        if tag == "summary":
+            self.summaries += 1
         for name, value in attrs:
             if name.startswith("on"):
                 self.event_attributes.append(name)
             if name in {"src", "href"} and value and value.startswith(("http:", "https:")):
                 self.remote_urls.append(value)
+            if (
+                name == "content"
+                and value
+                and "Content-Security-Policy" in self.get_starttag_text()
+            ):
+                self.csp = value
+
+    def handle_data(self, data: str) -> None:
+        if self.in_script:
+            self.script_text.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "script":
+            self.in_script = False
 
 
 def test_html_report_shows_full_finding_and_notebook_location() -> None:
@@ -133,7 +162,7 @@ def test_empty_and_partial_reports_do_not_claim_safety() -> None:
     assert "Parse errors: 1" in html and "Notices: 2" in html
 
 
-def test_all_untrusted_text_is_escaped_and_report_has_no_active_content() -> None:
+def test_all_untrusted_text_is_escaped_and_script_is_fixed_and_csp_pinned() -> None:
     payload = '<script>alert("x")</script><img src=x onerror="bad()">'
     hostile_path = f"reports/{payload}.py"
     finding = Finding(
@@ -172,14 +201,22 @@ def test_all_untrusted_text_is_escaped_and_report_has_no_active_content() -> Non
     assert "&lt;img src=x onerror=&quot;bad()&quot;&gt;" in html
     assert "<script>alert" not in html
     assert 'onerror="bad()"' not in html
-    assert inspector.scripts == 0
+    assert inspector.scripts == 1
     assert inspector.event_attributes == []
     assert inspector.remote_urls == []
-    assert "Content-Security-Policy" in html
-    assert "<script" not in html
+    assert inspector.csp.startswith("default-src 'none'; script-src 'sha256-")
+    assert "'unsafe-inline'" not in inspector.csp.split("script-src ", 1)[1].split(";", 1)[0]
+    script = "".join(inspector.script_text)
+    digest = base64.b64encode(hashlib.sha256(script.encode("utf-8")).digest()).decode("ascii")
+    assert f"script-src 'sha256-{digest}'" in inspector.csp
+    assert payload not in script
+    assert all(
+        token not in script for token in ("innerHTML", "eval(", "Function(", "document.write")
+    )
+    assert "<script>alert" not in html
 
 
-def test_report_is_deterministic_and_uses_no_javascript_or_remote_resources() -> None:
+def test_report_is_deterministic_and_uses_only_fixed_local_interaction_script() -> None:
     report = ScanReport(
         (
             AnalysisResult(
@@ -209,6 +246,64 @@ def test_report_is_deterministic_and_uses_no_javascript_or_remote_resources() ->
     assert first == second
     findings_section = first.index("<h2>Findings (2)</h2>")
     assert first.index("ML001", findings_section) < first.index("ML004", findings_section)
-    assert "<script" not in first.lower()
+    assert first.count("<script>") == 1
     assert "http://" not in first and "https://" not in first
+    assert "innerHTML" not in first and "document.write" not in first
     assert "No scan errors or notices." in first
+
+
+def test_interactive_controls_reflect_observed_findings_and_keep_details_discoverable() -> None:
+    findings = (
+        Finding(
+            "ML001",
+            "path/one.py",
+            5,
+            2,
+            "Leak risk alpha",
+            "Risk details alpha",
+            "Suggestion alpha",
+            Evidence.POTENTIAL_STATISTICAL_RISK,
+            severity=Severity.WARNING,
+        ),
+        Finding(
+            "ST002",
+            "path/two.py",
+            11,
+            1,
+            "Discarded result beta",
+            "Risk details beta",
+            "Suggestion beta",
+            Evidence.GENERAL_ANALYSIS_ADVICE,
+            severity=Severity.INFO,
+        ),
+    )
+    report = ScanReport((AnalysisResult("path/one.py", findings=findings),))
+
+    html = render_html(report)
+    inspector = StructureInspector()
+    inspector.feed(html)
+
+    assert '<option value="ML001">ML001</option>' in html
+    assert '<option value="ST002">ST002</option>' in html
+    assert '<option value="warning">warning</option>' in html
+    assert '<option value="info">info</option>' in html
+    assert 'id="finding-search"' in html
+    assert "Showing 2 of 2 findings" in html
+    assert "当前筛选条件下没有匹配的 Finding。" in html
+    assert inspector.details == inspector.summaries == 2
+    assert inspector.open_details == 0
+    assert "Leak risk alpha" in html and "Risk details alpha" in html
+    assert "Suggestion beta" in html
+    script = "".join(inspector.script_text)
+    assert ".location" in script and ".finding-message" in script and ".finding-rule" in script
+    assert ".finding-detail" not in script
+    assert 'addEventListener("submit"' in script and "preventDefault()" in script
+
+
+def test_empty_findings_render_without_filter_form_but_keep_no_findings_message() -> None:
+    html = render_html(ScanReport((AnalysisResult("empty.py"),)))
+
+    assert 'id="finding-filters"' not in html
+    assert 'id="finding-search"' not in html
+    assert "No findings to filter." in html
+    assert "未发现受支持规则能够确认的问题" in html
