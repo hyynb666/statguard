@@ -2,8 +2,9 @@
 
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The foundation includes packaging, CLI scanning, Console/JSON reporting, public
-interfaces, Python and Notebook parsing, and Analyzer execution. Detection rules
-belong to later issues. Agree on a scoped change before expanding the roadmap.
+interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
+ML001–ML004 are documented in `docs/`. New rule work should follow the evidence,
+abstention, testing, and documentation conventions already established there.
 
 ## Set up and validate
 
@@ -136,3 +137,13 @@ feature-selector construction, proven fit_transform output lineage, and
 same-scope order. Supervised selector findings need a known score function and
 an explicit target; VarianceThreshold must remain described as an unsupervised
 variance operation. Unknown scoring semantics require abstention.
+
+## ML004 changes
+
+Follow the [ML004 contract](docs/ml004.md). Require an explicit supported
+sklearn estimator construction, the same receiver at `.fit`, and proven test
+roles for its actual feature and/or label input. Do not treat `predict`,
+`predict_proba`, `decision_function`, `score`, `transform`, or `partial_fit` as
+supported fitting evidence. Add negative fixtures for misleading names,
+custom estimators, train-only fitting, and unresolved scope or lineage. Findings
+describe potential risk without claiming a measured effect.
