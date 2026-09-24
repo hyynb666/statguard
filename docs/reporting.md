@@ -64,9 +64,11 @@ order does not establish historical execution order.
 Console diagnostics show the same Finding fields as JSON, including evidence,
 risk and fix. All report formats include scan errors and notices. HTML is a
 standalone offline document with a restrictive Content Security Policy and
-local CSS; it escapes every dynamic value, embeds no scripts or source snippets,
-and displays paths as text. Notebook outputs are never passed into the reporter.
-See [the HTML report guide](html-report.md) for its page contents and limits.
+local CSS. It escapes every dynamic value, includes a fixed inline filter
+script pinned by its SHA-256 CSP hash, and displays paths as text. Findings use
+native collapsed details, so they remain readable without JavaScript. Notebook
+outputs are never passed into the reporter. See [the HTML report guide](html-report.md)
+for its interaction, security model, and limits.
 `--output` writes the selected format as UTF-8, creates missing parent
 directories, and refuses to replace a scanned input. A write failure returns 2
 and writes a short message to stderr. Without `--output`, HTML is written as a
