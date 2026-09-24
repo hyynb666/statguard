@@ -1,7 +1,7 @@
 # CLI scan and report contract
 
-Issue #6 connects file discovery and the existing Analyzer to Console and
-JSON output. The default registry contains [ML001](ml001.md), [ML002](ml002.md),
+The scanner and Analyzer expose report data for Console, JSON, and HTML output.
+The default registry contains [ML001](ml001.md), [ML002](ml002.md),
 [ML003](ml003.md), and [ML004](ml004.md).
 
 ## Python API and scope
@@ -9,9 +9,9 @@ JSON output. The default registry contains [ML001](ml001.md), [ML002](ml002.md),
 `statguard.scanner.Scanner(analyzer).scan(path, *, exclude=())` returns
 `ScanReport` with per-file `AnalysisResult` records, scan-level errors and
 notices, aggregate Findings and errors, and the selected-rule count.
-`statguard.reporters.render_console(report)` and `render_json(report)` are
-pure formatters. Neither invokes parsers or rules. CLI `main(argv=None,
-*, registry=None)` accepts an explicit registry for trusted integrations and
+`statguard.reporters.render_console(report)`, `render_json(report)`, and
+`render_html(report)` are pure formatters. None invokes parsers or rules. CLI
+`main(argv=None, *, registry=None)` accepts an explicit registry for trusted integrations and
 tests; the installed CLI uses a fresh default registry containing ML001, ML002,
 ML003, and ML004. An explicit registry is used exactly as supplied. `--disable-rule` can
 disable any built-in rule independently; unknown rule IDs are invocation errors. It never loads rules
@@ -59,13 +59,18 @@ that the source is statistically correct. Partial Notebook parse errors remain
 in `analysis_errors` alongside findings from valid cells. Notebook document
 order does not establish historical execution order.
 
-## Console and exit behavior
+## Console, HTML, and exit behavior
 
 Console diagnostics show the same Finding fields as JSON, including evidence,
-risk and fix. Both formats include scan errors and notices. `--output` writes
-the chosen format as UTF-8, creates missing parent directories, and refuses
-to replace a scanned input. A write failure returns 2 and writes a short
-message to stderr.
+risk and fix. All report formats include scan errors and notices. HTML is a
+standalone offline document with a restrictive Content Security Policy and
+local CSS; it escapes every dynamic value, embeds no scripts or source snippets,
+and displays paths as text. Notebook outputs are never passed into the reporter.
+See [the HTML report guide](html-report.md) for its page contents and limits.
+`--output` writes the selected format as UTF-8, creates missing parent
+directories, and refuses to replace a scanned input. A write failure returns 2
+and writes a short message to stderr. Without `--output`, HTML is written as a
+complete document to stdout, with no status messages mixed into it.
 
 Exit 2 takes precedence if any input, parse, rule, or output error occurs.
 Otherwise `--fail-on warning` exits 1 for warning/error Findings, and

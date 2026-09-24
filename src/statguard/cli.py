@@ -9,7 +9,7 @@ from statguard import __version__
 from statguard.analyzer import Analyzer
 from statguard.context import AnalysisContext
 from statguard.core import RuleRegistry
-from statguard.reporters import render_console, render_json
+from statguard.reporters import render_console, render_html, render_json
 from statguard.reporters.models import reaches_threshold
 from statguard.rules import default_registry
 from statguard.scanner import Scanner
@@ -29,7 +29,7 @@ def main(
     commands = parser.add_subparsers(dest="command")
     check = commands.add_parser("check", help="Scan a Python file, Notebook, or directory")
     check.add_argument("path", help="File or directory to scan")
-    check.add_argument("--format", choices=("console", "json"), default="console")
+    check.add_argument("--format", choices=("console", "json", "html"), default="console")
     check.add_argument("--output", help="Write the complete report to this file")
     check.add_argument(
         "--exclude",
@@ -68,7 +68,8 @@ def main(
     except ValueError as error:
         print(f"statguard: error: {error}", file=sys.stderr)
         return 2
-    rendered = render_json(report) if args.format == "json" else render_console(report)
+    renderers = {"console": render_console, "json": render_json, "html": render_html}
+    rendered = renderers[args.format](report)
     if args.output is not None:
         destination = Path(args.output)
         scanned = {Path(result.path).resolve() for result in report.results}
