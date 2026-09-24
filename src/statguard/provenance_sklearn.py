@@ -156,6 +156,54 @@ def transformed_input(value: SymbolValue) -> ast.expr | None:
     )
 
 
+def transformer_instance(callee: SymbolValue) -> SymbolValue | None:
+    """Return the exact supported sklearn transformer construction for a method."""
+    method = callee.origin
+    if method.kind is not ValueKind.ATTRIBUTE or method.base is None:
+        return None
+    instance = method.base.origin
+    if (
+        instance.kind is not ValueKind.CALL
+        or instance.callee.qualified_name not in TRANSFORMER_PATHS
+    ):
+        return None
+    return instance
+
+
+def transformer_fit_inputs(callee: SymbolValue, call: ast.Call) -> tuple[ast.expr, ...] | None:
+    """Return explicit X/(optional y) for a supported transformer fit call.
+
+    The method name alone is insufficient; the receiver must resolve to an
+    allowlisted sklearn constructor and the call signature must be unambiguous.
+    """
+    method = callee.origin
+    if method.kind is not ValueKind.ATTRIBUTE or method.attribute not in {"fit", "fit_transform"}:
+        return None
+    if transformer_instance(callee) is None:
+        return None
+    if len(call.args) > 2 or any(isinstance(arg, ast.Starred) for arg in call.args):
+        return None
+    names = [keyword.arg for keyword in call.keywords]
+    if (
+        any(name not in {"X", "y"} for name in names)
+        or len(set(names)) != len(names)
+        or (call.args and "X" in names)
+        or (len(call.args) > 1 and "y" in names)
+    ):
+        return None
+    features = (
+        call.args[0]
+        if call.args
+        else next((keyword.value for keyword in call.keywords if keyword.arg == "X"), None)
+    )
+    labels = (
+        call.args[1]
+        if len(call.args) > 1
+        else next((keyword.value for keyword in call.keywords if keyword.arg == "y"), None)
+    )
+    return None if features is None else (features, *((labels,) if labels is not None else ()))
+
+
 def learns_scaling_parameters(callee: SymbolValue) -> bool:
     """Require an explicit supported construction with known learning switches."""
     method = callee.origin
@@ -262,7 +310,7 @@ def feature_selector_semantics(
     if not is_feature_selector(callee):
         return None
     method = callee.origin
-    if method.attribute != "fit_transform":
+    if method.attribute not in {"fit", "fit_transform"}:
         return None
     receiver = method.base.origin
     name = receiver.callee.qualified_name

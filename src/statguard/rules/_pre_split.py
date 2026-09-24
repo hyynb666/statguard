@@ -16,6 +16,8 @@ class PreSplitTransform:
 
     transform: DataOrigin
     split: DataOrigin
+    fit: DataOrigin | None = None
+    fit_callee: SymbolValue | None = None
 
 
 def _receiver_unmodified(
@@ -35,7 +37,7 @@ def _receiver_unmodified(
             continue
         target = context.symbols.resolve(call.node.func).origin
         if target.kind is ValueKind.ATTRIBUTE and target.base.origin is receiver:
-            if target.attribute not in {"transform", "fit_transform"}:
+            if target.attribute not in {"fit", "transform", "fit_transform"}:
                 return False
         arguments = [*call.node.args, *(kw.value for kw in call.node.keywords)]
         if any(context.symbols.resolve(arg).origin is receiver for arg in arguments):
@@ -47,8 +49,9 @@ def find_pre_split_transforms(
     context: AnalysisContext,
     accepts: Callable[[SymbolValue], bool],
 ) -> tuple[PreSplitTransform, ...]:
-    """Find accepted ``fit_transform`` outputs entering a later split."""
+    """Find supported fitted-transform outputs entering a later split."""
     matches: dict[tuple[str, str], PreSplitTransform] = {}
+    separated = {item.transform.id: item for item in context.provenance.fitted_transforms}
     for split in context.provenance.splits:
         split_site = context.symbols.evaluation_site(split.node)
         if split_site is None:
@@ -70,14 +73,27 @@ def find_pre_split_transforms(
             pending.extend(value.sources)
             method = value.callee.origin
             site = context.symbols.evaluation_site(value.node)
+            if site is None or site.scope is not split_site.scope or site.order >= split_site.order:
+                continue
+            if method.attribute == "fit_transform":
+                if not accepts(value.callee) or not _receiver_unmodified(
+                    context, value.callee, site
+                ):
+                    continue
+                matches[(value.id, split.id)] = PreSplitTransform(value, split)
+                continue
+            state = separated.get(value.id)
             if (
-                method.attribute != "fit_transform"
-                or not accepts(value.callee)
-                or site is None
-                or site.scope is not split_site.scope
-                or site.order >= split_site.order
-                or not _receiver_unmodified(context, value.callee, site)
+                method.attribute != "transform"
+                or state is None
+                or state.scope is not split_site.scope
+                or state.fit_site.order >= state.transform_site.order
+                or state.transform_site.order >= split_site.order
+                or state.fit_callee is None
+                or not accepts(state.fit_callee)
             ):
                 continue
-            matches[(value.id, split.id)] = PreSplitTransform(value, split)
+            matches[(state.fit.id, split.id)] = PreSplitTransform(
+                value, split, fit=state.fit, fit_callee=state.fit_callee
+            )
     return tuple(matches[key] for key in sorted(matches))

@@ -18,18 +18,29 @@ class ML002(Rule[AnalysisContext]):
             context, lambda callee: imputer_semantics(callee) is not None
         ):
             value, split = match.transform, match.split
-            mechanism = imputer_semantics(value.callee)
+            fit = match.fit or value
+            callee = match.fit_callee or value.callee
+            mechanism = imputer_semantics(callee)
             if mechanism is None:  # Kept explicit for type narrowing and safe abstention.
                 continue
             split_location = f"{split.location.path}:{split.location.line}:{split.location.column}"
+            transform_location = (
+                f"{value.location.path}:{value.location.line}:{value.location.column}"
+            )
             if context.cell_index is not None:
                 split_location += f" (Notebook cell_index={context.cell_index})"
+                transform_location += f" (Notebook cell_index={context.cell_index})"
+            transform_evidence = (
+                f" The fitted instance transformed the same input at {transform_location}."
+                if match.fit is not None
+                else ""
+            )
             findings.append(
                 Finding(
                     rule_id=self.rule_id,
                     file_path=context.path,
-                    line=value.location.line,
-                    column=value.location.column,
+                    line=fit.location.line,
+                    column=fit.location.column,
                     cell=context.cell,
                     cell_index=context.cell_index,
                     severity=self.default_severity,
@@ -37,8 +48,9 @@ class ML002(Rule[AnalysisContext]):
                     evidence=Evidence.POTENTIAL_STATISTICAL_RISK,
                     message="Potential imputation leakage before train/test split.",
                     explanation=(
-                        "A known sklearn imputer's fit_transform output flows into "
-                        f"train_test_split at {split_location}, after fitting in the same scope. "
+                        "A known sklearn imputer's fitted transformation output flows into "
+                        f"train_test_split at {split_location}, after fitting in the same scope."
+                        f"{transform_evidence} "
                         f"The imputer learns from {mechanism}; information from the eventual "
                         "test subset may therefore influence the fitted imputation operation. "
                         "This static pattern does not establish actual leakage or measured "

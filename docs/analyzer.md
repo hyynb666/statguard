@@ -122,6 +122,12 @@ rule for that unit, preventing a partial rule batch from looking complete.
 Rule errors are kept distinct from parser errors and never become statistical
 Findings. System-level interrupts such as KeyboardInterrupt are not swallowed.
 
+The lazily constructed AnalysisContext also exposes the same cached
+`SymbolResolver` and `ProvenanceTracker` used by rule execution. Provenance
+includes bounded same-instance fit/transform evidence for the allowlisted
+ML001–ML003 transformers. That evidence is confined to one supported AST scope
+and is not shared across Notebook cells or function invocations.
+
 The framework validates result shape and identity; it cannot prove a rule's
 statistical reasoning, verify every source coordinate, or prevent a trusted
 rule from deliberately executing code. Rule authors must follow AGENTS.md and
