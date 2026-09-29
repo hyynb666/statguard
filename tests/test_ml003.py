@@ -340,6 +340,7 @@ def test_default_registry_and_rule_disabling_are_independent():
         "ML006",
         "ML009",
         "ST001",
+        "ST002",
     ]
     registry.disable("ML003")
     result = Analyzer(registry).analyze_source(risk())

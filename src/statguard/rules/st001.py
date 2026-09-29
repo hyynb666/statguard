@@ -6,20 +6,7 @@ from dataclasses import dataclass
 
 from statguard.context import AnalysisContext
 from statguard.core import Confidence, Evidence, Finding, Rule, Severity
-
-_TESTS = frozenset(
-    {
-        "scipy.stats.ttest_ind",
-        "scipy.stats.ttest_rel",
-        "scipy.stats.ttest_1samp",
-        "scipy.stats.mannwhitneyu",
-        "scipy.stats.wilcoxon",
-        "scipy.stats.pearsonr",
-        "scipy.stats.spearmanr",
-        "scipy.stats.chi2_contingency",
-        "scipy.stats.f_oneway",
-    }
-)
+from statguard.rules._scipy_tests import SUPPORTED_SCIPY_TESTS as _TESTS
 
 
 @dataclass(frozen=True, slots=True)

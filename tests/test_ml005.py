@@ -210,6 +210,7 @@ def test_pipeline_and_ml009_rule_identity_remain_separate():
         "ML006",
         "ML009",
         "ST001",
+        "ST002",
     }
     pipeline = code(
         "from sklearn.model_selection import train_test_split",

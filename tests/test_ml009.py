@@ -614,6 +614,7 @@ def test_rule_is_default_registered_but_individually_selectable():
         "ML006",
         "ML009",
         "ST001",
+        "ST002",
     ]
     assert len(registered_ids) == len(set(registered_ids))
     assert "ML005" in registered_ids

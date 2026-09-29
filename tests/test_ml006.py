@@ -290,7 +290,17 @@ def test_python_cli_never_executes_source(tmp_path: Path):
 def test_default_registry_contains_one_independently_disableable_ml006():
     registry = default_registry()
     ids = [rule.rule_id for rule in registry.iter_enabled()]
-    assert ids == ["ML001", "ML002", "ML003", "ML004", "ML005", "ML006", "ML009", "ST001"]
+    assert ids == [
+        "ML001",
+        "ML002",
+        "ML003",
+        "ML004",
+        "ML005",
+        "ML006",
+        "ML009",
+        "ST001",
+        "ST002",
+    ]
     assert len(ids) == len(set(ids))
     registry.disable("ML006")
     assert "ML006" not in {rule.rule_id for rule in registry.iter_enabled()}
