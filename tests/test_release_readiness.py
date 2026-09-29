@@ -31,10 +31,10 @@ def test_default_registry_contains_exactly_one_instance_of_each_release_rule():
     assert set(rule_ids) == V0_1_CORE_RULE_IDS | ADDITIONAL_RULE_IDS
 
 
-def test_release_version_and_alpha_classifier_are_consistent():
+def test_development_version_and_alpha_classifier_are_consistent():
     metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
-    assert metadata["version"] == "0.1.0"
+    assert metadata["version"] == "0.2.0.dev0"
     assert "Development Status :: 3 - Alpha" in metadata["classifiers"]
     assert not any("Pre-Alpha" in classifier for classifier in metadata["classifiers"])
 
@@ -46,6 +46,22 @@ def test_readme_describes_github_install_and_no_pypi_availability():
     assert "--branch v0.1.0" in readme
     assert "not published to PyPI" in readme
     assert "pip install statguard" not in readme
+
+
+def test_readme_distinguishes_stable_release_from_action_development():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "StatGuard v0.1.0 is the first public Alpha release on GitHub" in readme
+    assert "developing toward v0.2.0 (`0.2.0.dev0`)" in readme
+    assert "`@main` is a moving development reference" in readme
+    assert "v0.1.0 release does not contain this Action" in readme
+
+
+def test_unreleased_changelog_records_action_without_changing_release_history():
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+
+    assert "## [Unreleased]\n\n### Added\n\n- GitHub composite Action integration" in changelog
+    assert "## [0.1.0] - 2026-09-29" in changelog
 
 
 def test_release_notes_cover_rules_safety_and_installation():

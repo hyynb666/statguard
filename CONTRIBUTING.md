@@ -110,6 +110,15 @@ be fixed code pinned by a CSP hash and must not interpolate report content.
 Do not add remote resources or render Notebook outputs.
 Review any proposed JSON schema or exit-code change before release.
 
+## GitHub Action contributions
+
+The root composite Action is documented in [docs/github-action.md](docs/github-action.md).
+Keep Action inputs out of shell command strings: the Python runner must build
+an argument list and invoke StatGuard without a shell. The package must be
+installed from `GITHUB_ACTION_PATH`, while the analyzed repository is rooted
+at `GITHUB_WORKSPACE`. Run the Action smoke workflow on both Linux and Windows
+when changing its metadata, runner, or input handling.
+
 ## Review workflow
 
 Create a focused branch, implement the smallest complete change, and run the
