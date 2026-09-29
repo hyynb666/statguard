@@ -11,6 +11,8 @@ Changes to StatGuard are documented here. This project follows the spirit of
   config selection and a config-discovery opt-out in the CLI and GitHub Action.
 - GitHub composite Action integration for configurable CI scans, report output,
   failure thresholds, rule disabling, and path exclusions.
+- SARIF 2.1.0 reporting for CLI and GitHub Action output, with Code Scanning
+  integration guidance. The Action generates reports but does not upload them.
 
 ## [0.1.0] - 2026-09-29
 

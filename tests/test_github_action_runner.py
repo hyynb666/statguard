@@ -47,7 +47,7 @@ def test_default_arguments_scan_workspace(default_inputs: dict[str, str], monkey
     }
 
 
-@pytest.mark.parametrize("report_format", ["console", "json", "html"])
+@pytest.mark.parametrize("report_format", ["console", "json", "html", "sarif"])
 def test_report_format_is_mapped(report_format: str) -> None:
     assert build_cli_args({"INPUT_FORMAT": report_format}) == [
         "check",
@@ -112,6 +112,15 @@ def test_failure_threshold_is_mapped(threshold: str) -> None:
 def test_output_path_with_spaces_is_one_argument() -> None:
     args = build_cli_args({"INPUT_OUTPUT": "reports/weekly report.html"})
     assert args[-2:] == ["--output", "reports/weekly report.html"]
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["../outside.sarif", "reports/../../outside.sarif", "C:\\outside.sarif", "/tmp/out.sarif"],
+)
+def test_output_path_must_stay_inside_workspace(path: str) -> None:
+    with pytest.raises(ValueError, match="output must stay within GITHUB_WORKSPACE"):
+        build_cli_args({"INPUT_OUTPUT": path})
 
 
 def test_scan_path_with_spaces_is_one_argument() -> None:
@@ -231,6 +240,21 @@ def test_action_config_resolved_symlink_cannot_escape_workspace(
     assert main(default_inputs) == 2
 
 
+def test_action_output_resolved_symlink_cannot_escape_workspace(
+    default_inputs: dict[str, str], tmp_path: Path
+) -> None:
+    outside = tmp_path.parent / f"{tmp_path.name}-outside.sarif"
+    outside.write_text("existing", encoding="utf-8")
+    link = Path(default_inputs["GITHUB_WORKSPACE"]) / "outside.sarif"
+    try:
+        link.symlink_to(outside)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlink creation is unavailable")
+    default_inputs["INPUT_OUTPUT"] = "outside.sarif"
+    assert main(default_inputs) == 2
+    assert outside.read_text(encoding="utf-8") == "existing"
+
+
 @pytest.mark.parametrize("path", ["../outside", "sub/../../outside", "C:\\outside"])
 def test_path_cannot_escape_workspace(path: str) -> None:
     with pytest.raises(ValueError, match="GITHUB_WORKSPACE"):
@@ -264,4 +288,5 @@ def test_action_smoke_workflow_covers_both_hosted_platforms() -> None:
     assert "fail-on: warning" in workflow
     assert "disable-rules: ML001" in workflow
     assert "format: json" in workflow and "format: html" in workflow
+    assert "format: sarif" in workflow and "report.sarif" in workflow
     assert "action_no_execution.py" in workflow

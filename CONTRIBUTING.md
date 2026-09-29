@@ -114,6 +114,12 @@ be fixed code pinned by a CSP hash and must not interpolate report content.
 Do not add remote resources or render Notebook outputs.
 Review any proposed JSON schema or exit-code change before release.
 
+SARIF additions should follow [the SARIF contract](docs/sarif.md): keep it a
+separate format from JSON schema 1.0, preserve Notebook cell coordinates as
+metadata rather than raw JSON regions, and never upload from the StatGuard
+Action. Test rule metadata ownership, stable fingerprints, invocation errors,
+Windows paths, report-before-threshold behavior, and no execution of inputs.
+
 ## GitHub Action contributions
 
 The root composite Action is documented in [docs/github-action.md](docs/github-action.md).

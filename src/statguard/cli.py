@@ -10,7 +10,7 @@ from statguard.analyzer import Analyzer
 from statguard.config import ConfigError, StatGuardConfig, discover_config, load_config
 from statguard.context import AnalysisContext
 from statguard.core import RuleRegistry
-from statguard.reporters import render_console, render_html, render_json
+from statguard.reporters import RuleMetadata, render_console, render_html, render_json, render_sarif
 from statguard.reporters.models import reaches_threshold
 from statguard.rules import default_registry
 from statguard.scanner import Scanner
@@ -30,7 +30,7 @@ def main(
     commands = parser.add_subparsers(dest="command")
     check = commands.add_parser("check", help="Scan a Python file, Notebook, or directory")
     check.add_argument("path", help="File or directory to scan")
-    check.add_argument("--format", choices=("console", "json", "html"), default="console")
+    check.add_argument("--format", choices=("console", "json", "html", "sarif"), default="console")
     check.add_argument("--output", help="Write the complete report to this file")
     check.add_argument(
         "--exclude",
@@ -100,8 +100,19 @@ def main(
     except ValueError as error:
         print(f"statguard: error: {error}", file=sys.stderr)
         return 2
-    renderers = {"console": render_console, "json": render_json, "html": render_html}
-    rendered = renderers[args.format](report)
+    if args.format == "sarif":
+        rule_metadata = {
+            rule.rule_id: RuleMetadata(
+                name=getattr(rule, "name", rule.rule_id),
+                description=rule.description,
+                default_severity=str(getattr(rule, "default_severity", "warning")),
+            )
+            for rule in selected
+        }
+        rendered = render_sarif(report, base_path=Path.cwd(), rule_metadata=rule_metadata)
+    else:
+        renderers = {"console": render_console, "json": render_json, "html": render_html}
+        rendered = renderers[args.format](report)
     if args.output is not None:
         destination = Path(args.output)
         scanned = {Path(result.path).resolve() for result in report.results}

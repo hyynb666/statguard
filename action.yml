@@ -12,7 +12,7 @@ inputs:
     required: false
     default: "3.12"
   format:
-    description: Report format (console, json, or html).
+    description: Report format (console, json, html, or sarif).
     required: false
     default: console
   output:

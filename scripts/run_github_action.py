@@ -24,8 +24,8 @@ def build_cli_args(inputs: Mapping[str, str]) -> list[str]:
         _validate_relative_workspace_path(config_path, "config")
 
     report_format = (inputs.get("INPUT_FORMAT", "console") or "console").strip()
-    if report_format not in {"console", "json", "html"}:
-        raise ValueError("format must be console, json, or html")
+    if report_format not in {"console", "json", "html", "sarif"}:
+        raise ValueError("format must be console, json, html, or sarif")
 
     fail_on = inputs.get("INPUT_FAIL_ON", "").strip()
     if fail_on not in {"", "warning", "error"}:
@@ -38,6 +38,7 @@ def build_cli_args(inputs: Mapping[str, str]) -> list[str]:
         args.append("--no-config")
     output = inputs.get("INPUT_OUTPUT", "")
     if output:
+        _validate_relative_workspace_path(output, "output")
         args.extend(("--output", output))
     if fail_on:
         args.extend(("--fail-on", fail_on))
@@ -79,6 +80,8 @@ def main(environ: Mapping[str, str] | None = None) -> int:
     try:
         args = build_cli_args(inputs)
         relative_paths = [args[1]]
+        if "--output" in args:
+            relative_paths.append(args[args.index("--output") + 1])
         if "--config" in args:
             relative_paths.append(args[args.index("--config") + 1])
         for value in relative_paths:
