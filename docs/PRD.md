@@ -63,8 +63,8 @@ separately authorized publication is completed.
 ### 3.3 CLI and reporting
 
 - Provide `statguard check <path>` with default Console output and `--format json`, `--format html`, or `--format sarif`; `--output` may save a report. Console output must make the location, rule ID, evidence category, risk, and fix discoverable without reading source code.
-  SARIF is an additive development format using version 2.1.0; it does not
-  change the documented JSON schema or the v0.1 release contents.
+  SARIF is an additive reporting format introduced after v0.1, using version
+  2.1.0; it does not change the documented JSON schema.
 - JSON output must be valid standalone JSON on stdout and expose a documented schema version, scanned-file summary, findings, and scan errors/notices. Diagnostics or progress must not corrupt JSON stdout.
 - Exit with `0` when a completed scan does not meet an explicitly configured failure threshold, `1` when at least one Finding meets `--fail-on warning` or `--fail-on error`, and `2` for invalid invocation or any input, parse, rule, or report error. Without `--fail-on`, Findings do not change the exit status. An undetermined notice alone is not a Finding and does not change the status. This is the v0.1 CLI contract for CI users.
 
