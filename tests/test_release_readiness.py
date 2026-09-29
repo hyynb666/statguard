@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import tomllib
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -28,6 +29,33 @@ def test_default_registry_contains_exactly_one_instance_of_each_release_rule():
 
     assert len(rule_ids) == len(set(rule_ids))
     assert set(rule_ids) == V0_1_CORE_RULE_IDS | ADDITIONAL_RULE_IDS
+
+
+def test_release_version_and_alpha_classifier_are_consistent():
+    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+
+    assert metadata["version"] == "0.1.0"
+    assert "Development Status :: 3 - Alpha" in metadata["classifiers"]
+    assert not any("Pre-Alpha" in classifier for classifier in metadata["classifiers"])
+
+
+def test_readme_describes_github_install_and_no_pypi_availability():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "first public Alpha release" in readme
+    assert "--branch v0.1.0" in readme
+    assert "not published to PyPI" in readme
+    assert "pip install statguard" not in readme
+
+
+def test_release_notes_cover_rules_safety_and_installation():
+    notes = (ROOT / "docs/release-notes-v0.1.0.md").read_text(encoding="utf-8")
+
+    sections = ("## Highlights", "## Rules", "## Safety", "## Known limitations", "## Installation")
+    for section in sections:
+        assert section in notes
+    assert "ML001–ML006" in notes and "ST001–ST002" in notes and "ML009" in notes
+    assert "not published to PyPI" in notes
 
 
 def test_repository_markdown_links_resolve_to_local_paths():

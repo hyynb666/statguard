@@ -1,8 +1,7 @@
 # StatGuard v0.1.0 Release Checklist
 
-This checklist is for a future, separately authorized release task. It does
-not authorize tagging, creating a GitHub Release, or publishing to PyPI as part
-of the current release audit.
+This checklist records the StatGuard v0.1.0 release process authorized by
+Issue #22. PyPI publication remains out of scope and is not authorized.
 
 ## Pre-release
 

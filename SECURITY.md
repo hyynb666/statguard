@@ -2,9 +2,9 @@
 
 ## Supported versions
 
-Security fixes are currently considered for the latest development version on
-`main`. No stable release has been published yet. Once releases exist, this
-section will identify supported release lines.
+Security fixes are considered for the latest release and the current `main`
+branch. When additional release lines exist, this section will identify the
+supported versions.
 
 ## Reporting a vulnerability
 

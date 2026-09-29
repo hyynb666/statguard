@@ -5,6 +5,8 @@ Changes to StatGuard are documented here. This project follows the spirit of
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-29
+
 ### Added
 
 - Static scanning for Python files and Jupyter Notebook code cells.
@@ -28,6 +30,3 @@ Changes to StatGuard are documented here. This project follows the spirit of
   execution order, and cross-cell data flow is not modeled.
 - A clean scan does not establish statistical correctness. See the individual
   rule guides and [release audit](docs/release-audit-v0.1.md).
-
-The `0.1.0.dev0` version remains a development version. No `0.1.0` release date
-is assigned here; version freeze belongs to a separately reviewed release task.
