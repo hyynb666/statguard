@@ -1,9 +1,9 @@
 # StatGuard
 
-StatGuard is an early-stage static analyzer for statistical validity, model
-evaluation, and reproducibility risks in Python scripts and Jupyter Notebooks.
-It parses source without importing or executing submitted code. Version
-`0.1.0.dev0` is a development version.
+StatGuard v0.1.0 is the first public Alpha release of a conservative static
+analyzer for statistical validity, model evaluation, and reproducibility risks
+in Python scripts and Jupyter Notebooks. It parses source without importing or
+executing submitted code.
 
 ## Why StatGuard?
 
@@ -92,20 +92,22 @@ cells or analyze stored outputs. Document order does not establish historical
 kernel execution order, and cross-cell data flow is not modeled. A clean scan
 does not establish that a Notebook or analysis is statistically correct.
 
-## Install from this repository
+## Install v0.1.0
 
-Requires Python 3.11+. CI covers Python 3.11–3.14 on Windows and Linux. This
-project has not been published to PyPI.
+Requires Python 3.11+. CI covers Python 3.11–3.14 on Windows and Linux.
+StatGuard is not published to PyPI. Install the tagged source:
 
 ```text
-git clone https://github.com/hyynb666/statguard.git
+git clone --branch v0.1.0 --depth 1 https://github.com/hyynb666/statguard.git
 cd statguard
-python -m venv .venv
-python -m pip install -e ".[dev]"
+python -m pip install .
 statguard --help
 statguard --version
 python -m statguard --version
 ```
+
+Alternatively, download the wheel attached to the [v0.1.0 GitHub Release](https://github.com/hyynb666/statguard/releases/tag/v0.1.0)
+and install the downloaded file with `python -m pip install <wheel-path>`.
 
 Activate the environment first, or on Windows run
 `.venv\Scripts\python.exe` and `.venv\Scripts\statguard.exe` directly.
@@ -210,8 +212,8 @@ defines the product scope and rule acceptance criteria.
 
 See also the [Code of Conduct](CODE_OF_CONDUCT.md), [Security Policy](SECURITY.md),
 [v0.1 release audit](docs/release-audit-v0.1.md), and
-[release checklist](docs/release-checklist.md). StatGuard is not currently
-published to PyPI; install from this repository or a locally built wheel.
+[release checklist](docs/release-checklist.md). StatGuard is not published to
+PyPI; install from the tagged source or the GitHub Release wheel.
 
 ## License
 
