@@ -89,7 +89,7 @@ and evaluation sites. The tracker uses the existing SymbolResolver to follow
 receiver aliases and requires both calls to read the same stable input binding
 version (including simple aliases). Equal unbound variable spellings are not
 accepted as source evidence. ML001–ML003 apply their own statistical semantics
-when output reaches a later split. ML005 reuses this evidence when output
+when output reaches a later split. ML009 reuses this evidence when output
 instead reaches a supported cross-validation `X` argument. Provenance remains
 evidence only; it emits no diagnostics.
 
@@ -130,8 +130,8 @@ only the provenance adapter interprets recognized split projections. The resolve
 also exposes its parser-owned `parsed` unit to reject mismatched tracker inputs.
 Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. The
 provenance layer itself emits no diagnostics. [ML001](ml001.md),
-[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), and [ML005](ml005.md)
-consume these facts without changing the JSON report schema. ML005 follows
+[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), and [ML009](ml009.md)
+consume these facts without changing the JSON report schema. ML009 follows
 direct fitted-transform outputs through known aliases to an exact sklearn CV
 call's `X` argument; it does not add another provenance graph.
 

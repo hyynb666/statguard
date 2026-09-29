@@ -1,4 +1,4 @@
-"""Positive, negative, boundary, CLI, Notebook, and safety tests for ML005."""
+"""Positive, negative, boundary, CLI, Notebook, and safety tests for ML009."""
 
 import json
 import subprocess
@@ -20,7 +20,7 @@ def source(*lines: str) -> str:
 def analyze(code: str):
     result = Analyzer(default_registry()).analyze_source(code, path="analysis.py")
     assert not result.errors
-    return tuple(finding for finding in result.findings if finding.rule_id == "ML005")
+    return tuple(finding for finding in result.findings if finding.rule_id == "ML009")
 
 
 def base_imports(transformer: str = "StandardScaler") -> str:
@@ -86,7 +86,7 @@ def test_supported_transformers_produce_component_specific_findings(
             "scores = cross_val_score(model, prepared, y, cv=5)",
         )
     )
-    assert finding.rule_id == "ML005"
+    assert finding.rule_id == "ML009"
     assert (finding.severity, finding.confidence) == ("warning", "medium")
     assert finding.evidence is Evidence.POTENTIAL_STATISTICAL_RISK
     fit_line = 5 if name == "IterativeImputer" else 4
@@ -402,7 +402,7 @@ def test_imputer_and_selector_noop_semantics_match_existing_rules():
     )
 
 
-def test_ml001_and_ml005_can_report_independent_split_and_cv_risks():
+def test_ml001_and_ml009_can_report_independent_split_and_cv_risks():
     result = Analyzer(default_registry()).analyze_source(
         source(
             "from sklearn.preprocessing import StandardScaler",
@@ -418,8 +418,8 @@ def test_ml001_and_ml005_can_report_independent_split_and_cv_risks():
         ),
         path="analysis.py",
     )
-    assert {finding.rule_id for finding in result.findings} == {"ML001", "ML005", "ST001"}
-    assert [finding.rule_id for finding in result.findings] == ["ML001", "ML005", "ST001"]
+    assert {finding.rule_id for finding in result.findings} == {"ML001", "ML009", "ST001"}
+    assert [finding.rule_id for finding in result.findings] == ["ML001", "ML009", "ST001"]
 
 
 def test_notebook_cell_location_and_cross_cell_isolation():
@@ -445,7 +445,7 @@ def test_notebook_cell_location_and_cross_cell_isolation():
     }
     parsed = NotebookParser().parse_json(json.dumps(notebook), path="demo.ipynb")
     result = Analyzer(default_registry()).analyze(parsed)
-    (finding,) = [item for item in result.findings if item.rule_id == "ML005"]
+    (finding,) = [item for item in result.findings if item.rule_id == "ML009"]
     assert (finding.cell_index, finding.line, finding.column) == (2, 3, 12)
 
     split_notebook = {
@@ -476,7 +476,7 @@ def test_notebook_cell_location_and_cross_cell_isolation():
     split_result = Analyzer(default_registry()).analyze(
         NotebookParser().parse_json(json.dumps(split_notebook), path="split.ipynb")
     )
-    assert not any(item.rule_id == "ML005" for item in split_result.findings)
+    assert not any(item.rule_id == "ML009" for item in split_result.findings)
 
 
 def test_cli_console_json_html_disable_and_fail_threshold(tmp_path: Path):
@@ -492,7 +492,7 @@ def test_cli_console_json_html_disable_and_fail_threshold(tmp_path: Path):
     common = [sys.executable, "-m", "statguard", "check", str(target)]
     console = subprocess.run(common, capture_output=True, text=True, encoding="utf-8", check=False)
     assert console.returncode == 0
-    assert "ML005" in console.stdout and "Potential preprocessing leakage" in console.stdout
+    assert "ML009" in console.stdout and "Potential preprocessing leakage" in console.stdout
     assert "potential statistical risk" in console.stdout
 
     json_result = subprocess.run(
@@ -504,7 +504,7 @@ def test_cli_console_json_html_disable_and_fail_threshold(tmp_path: Path):
     )
     assert json_result.returncode == 0
     report = json.loads(json_result.stdout)
-    assert any(item["rule_id"] == "ML005" for item in report["findings"])
+    assert any(item["rule_id"] == "ML009" for item in report["findings"])
 
     html_result = subprocess.run(
         [*common, "--format", "html"],
@@ -514,9 +514,9 @@ def test_cli_console_json_html_disable_and_fail_threshold(tmp_path: Path):
         check=False,
     )
     assert html_result.returncode == 0
-    assert "ML005" in html_result.stdout
+    assert "ML009" in html_result.stdout
     assert "potential statistical risk" in html_result.stdout
-    assert '<option value="ML005">ML005</option>' in html_result.stdout
+    assert '<option value="ML009">ML009</option>' in html_result.stdout
     assert 'class="finding-summary"' in html_result.stdout
     assert "content-security-policy" in html_result.stdout.lower()
     assert "https://" not in html_result.stdout
@@ -531,14 +531,14 @@ def test_cli_console_json_html_disable_and_fail_threshold(tmp_path: Path):
     assert failed.returncode == 1
 
     disabled = subprocess.run(
-        [*common, "--disable-rule", "ML005"],
+        [*common, "--disable-rule", "ML009"],
         capture_output=True,
         text=True,
         encoding="utf-8",
         check=False,
     )
     assert disabled.returncode == 0
-    assert "ML005" not in disabled.stdout
+    assert "ML009" not in disabled.stdout
 
 
 def test_scanning_python_and_notebook_never_executes_code_or_output(tmp_path: Path):
@@ -555,7 +555,7 @@ def test_scanning_python_and_notebook_never_executes_code_or_output(tmp_path: Pa
     )
     cli = [sys.executable, "-m", "statguard", "check", str(py_file)]
     result = subprocess.run(cli, capture_output=True, text=True, encoding="utf-8", check=False)
-    assert "ML005" in result.stdout
+    assert "ML009" in result.stdout
     assert not marker.exists()
 
     notebook = {
@@ -588,12 +588,15 @@ def test_scanning_python_and_notebook_never_executes_code_or_output(tmp_path: Pa
         encoding="utf-8",
         check=False,
     )
-    assert "ML005" in result.stdout
+    assert "ML009" in result.stdout
     assert not marker.exists()
 
 
 def test_rule_is_default_registered_but_individually_selectable():
     registry = default_registry()
-    assert "ML005" in {rule.rule_id for rule in registry.iter_enabled()}
-    registry.disable("ML005")
-    assert "ML005" not in {rule.rule_id for rule in registry.iter_enabled()}
+    registered_ids = [rule.rule_id for rule in registry.iter_enabled()]
+    assert registered_ids == ["ML001", "ML002", "ML003", "ML004", "ML009", "ST001"]
+    assert len(registered_ids) == len(set(registered_ids))
+    assert "ML005" not in registered_ids
+    registry.disable("ML009")
+    assert "ML009" not in {rule.rule_id for rule in registry.iter_enabled()}

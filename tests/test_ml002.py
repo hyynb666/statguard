@@ -302,7 +302,7 @@ def test_default_registry_and_rule_disabling_are_independent():
         "ML002",
         "ML003",
         "ML004",
-        "ML005",
+        "ML009",
         "ST001",
     ]
     registry.disable("ML002")

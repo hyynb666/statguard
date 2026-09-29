@@ -1,4 +1,4 @@
-"""ML005: fitted preprocessing output supplied to cross-validation."""
+"""ML009: fitted preprocessing output supplied to cross-validation."""
 
 from __future__ import annotations
 
@@ -160,8 +160,8 @@ def _fits_and_calls(context: AnalysisContext):
                 yield call, transform, callee.qualified_name, evidence
 
 
-class ML005(Rule[AnalysisContext]):
-    rule_id = "ML005"
+class ML009(Rule[AnalysisContext]):
+    rule_id = "ML009"
     name = "Potential Preprocessing Leakage Before Cross-Validation"
     description = (
         "A fitted preprocessing output is supplied to a later sklearn cross-validation call."
@@ -233,4 +233,4 @@ class ML005(Rule[AnalysisContext]):
         )
 
 
-__all__ = ["ML005"]
+__all__ = ["ML009"]
