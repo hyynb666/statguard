@@ -170,7 +170,7 @@ def test_action_metadata_uses_composite_action_and_local_package_source() -> Non
 
 
 def test_action_smoke_workflow_covers_both_hosted_platforms() -> None:
-    workflow = (ROOT / ".github/workflows/action-smoke.yml").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
 
     assert "os: [ubuntu-latest, windows-latest]" in workflow
     assert "uses: ./" in workflow
