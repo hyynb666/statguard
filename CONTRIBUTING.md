@@ -3,7 +3,7 @@
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The foundation includes packaging, CLI scanning, Console/JSON reporting, public
 interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
-ML001–ML006, ML009 and ST001 are documented in `docs/`. New rule work should follow the evidence,
+ML001–ML006, ML009, ST001 and ST002 are documented in `docs/`. New rule work should follow the evidence,
 abstention, testing, and documentation conventions already established there.
 
 ## Set up and validate
@@ -190,3 +190,13 @@ significance-threshold comparison inside a potentially repeated `for` loop.
 Do not infer test identity from names, treat separate calls as a hypothesis
 family by themselves, or claim that a particular correction is always
 required. Keep correction evidence tied to the decisions actually made.
+
+## ST002 changes
+
+Follow the [ST002 contract](docs/st002.md). Report only an exact supported
+`scipy.stats` call that is a standalone expression or whose complete result is
+assigned to `_`. Partial tuple discards, ordinary assignments, returns,
+consumers, attributes, and subscripts are not discarded-result findings.
+Resolve the call at its use site; do not infer test identity from its name.
+Treat `_` as potentially intentional and avoid framing the observation as a
+defect.

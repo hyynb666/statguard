@@ -13,19 +13,21 @@ and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule, and RuleRegistry
 are available as Python APIs. Import aliases and basic assignment/call provenance
 are available through AnalysisContext.symbols. Limited split and transformation
 provenance is available through AnalysisContext.provenance.
-**ML001–ML006, ML009 and ST001 are enabled detection rules.** ML001–ML003 report supported
+**ML001–ML006, ML009, ST001 and ST002 are enabled detection rules.** ML001–ML003 report supported
 preprocessing and feature-selection outputs that reach a later train/test split.
 ML004 reports a supported estimator fit that receives test-role features or
 labels. ML005 reports a supported sklearn estimator scored on its training
 split without a corresponding held-out score in that model episode and scope;
 training scores are not inherently wrong. ML006 flags resolved shuffled
 `train_test_split` calls without a fixed integer seed as an informational
-reproducibility prompt. ST001 reports a supported SciPy
-significance-test p-value compared with a literal threshold in a potentially
-repeated `for` loop. See
+reproducibility prompt. ST001 reports a supported SciPy significance-test
+p-value compared with a literal threshold in a potentially repeated `for`
+loop. ST002 reports supported SciPy test calls whose complete result is a bare
+expression or assigned to `_`; it does not imply a bug. See
 [ML001](docs/ml001.md), [ML002](docs/ml002.md), [ML003](docs/ml003.md),
 [ML004](docs/ml004.md), [ML005](docs/ml005.md), [ML006](docs/ml006.md), [ML009](docs/ml009.md), and
-[ST001](docs/st001.md) for evidence requirements and limitations.
+[ST001](docs/st001.md) and [ST002](docs/st002.md) for evidence requirements and limitations.
+All eight v0.1 rules in PRD Section 5 are implemented; ML009 is an additional later rule.
 ML009 reports supported fitted preprocessing output passed as `X` to a later
 `cross_val_score` or `cross_validate` call. It reuses component semantics and
 same-scope provenance from ML001–ML003; it does not inspect Pipeline internals.
@@ -117,7 +119,7 @@ src/statguard/
   core/                  # Finding, Evidence, Severity, Confidence, Rule, RuleRegistry
   parsers/               # PythonSourceParser and NotebookParser
   reporters/             # Console and JSON rendering
-  rules/                 # ML001–ML006, ML009, ST001 and the built-in registry
+  rules/                 # ML001–ML006, ML009, ST001–ST002 and the built-in registry
 ```
 
 The Python parser uses `ast` and keeps original AST nodes and Unicode-aware
@@ -157,6 +159,6 @@ defines the product scope and rule acceptance criteria.
 
 StatGuard is available under the [MIT License](LICENSE).
 
-Disable ML001, ML002, ML003, ML004, ML005, ML006, ML009, or ST001 independently with
+Disable ML001, ML002, ML003, ML004, ML005, ML006, ML009, ST001, or ST002 independently with
 `--disable-rule RULE_ID`.
 Warning findings exit 0 by default; use `--fail-on warning` to exit 1.

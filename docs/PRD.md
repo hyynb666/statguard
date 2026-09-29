@@ -125,6 +125,8 @@ Examples below describe typical cases. Exact variable names are illustrative; im
 
 **Do not trigger:** The result is assigned, returned, passed to another function, printed, or explicitly recorded. **Boundary:** A call whose identity cannot be resolved as a test is undetermined; assignment to `_` is still a deliberate discard and should trigger with wording that acknowledges intent. **Acceptance:** Cover a bare call, `_` assignment, assignment/return/logging, and an unrelated function call.
 
+**Implementation status:** Implemented; see [ST002 rule documentation](st002.md). All eight v0.1 rules in this section are implemented. ML009 is an additional later-version rule and is not part of the v0.1 count.
+
 ## 6. Later-version candidates
 
 The following rules are candidates after v0.1 feedback and evidence-quality review. Their IDs are reserved here but they are not implemented or counted in v0.1 acceptance: **ML007** test data used for model selection; **ML008** preprocessing fitted separately on train and test sets; **ST003** multiple pairwise tests after ANOVA without observed correction; **ST004** possible paired-test selection issue; **ST005** missing samples dropped immediately before inference; **ST006** incorrect interpretation of a p-value; **ST007** possible variable-scale issue in Pearson correlation. **ML009** is assigned to potential preprocessing leakage before cross-validation (Milestone 3, Issue #17) and is outside v0.1 acceptance. Later delivery may also include a GitHub Action integration, HTML report, or IDE integration. Each requires its own feasibility review, evidence rules, limitations, and tests before becoming a release commitment.

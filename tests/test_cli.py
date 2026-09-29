@@ -72,6 +72,8 @@ def test_check_scans_without_executing_input(cli: list[str], tmp_path: Path) -> 
             "ML009",
             "--disable-rule",
             "ST001",
+            "--disable-rule",
+            "ST002",
         ],
         cwd=tmp_path,
         capture_output=True,
