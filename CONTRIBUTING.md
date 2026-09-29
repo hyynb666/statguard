@@ -143,6 +143,13 @@ Package publication and release tagging are separate operations and are not part
 of a normal development push. Contributions are distributed under the project's
 [MIT License](LICENSE).
 
+## Release preparation
+
+The v0.1.0 audit and checklist are historical records. For v0.2.0, use the
+[v0.2 release audit](docs/release-audit-v0.2.md) and
+[v0.2 release checklist](docs/release-checklist-v0.2.md). Release operations
+must follow their version, artifact, and no-PyPI boundaries.
+
 ## Provenance contributions
 
 Follow [the provenance contract](docs/provenance.md). Keep syntactic call inputs

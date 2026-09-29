@@ -5,6 +5,8 @@ Changes to StatGuard are documented here. This project follows the spirit of
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-30
+
 ### Added
 
 - Project policy from `[tool.statguard]` in `pyproject.toml`, with explicit

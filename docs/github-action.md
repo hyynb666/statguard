@@ -1,11 +1,8 @@
 # GitHub Action
 
-StatGuard provides a composite GitHub Action for running its static scan in a
-workflow. The Action is part of development toward v0.2.0. **The stable v0.1.0
-release and tag do not include `action.yml`.** Until v0.2.0 is released,
-`hyynb666/statguard@main` is a moving development reference and can change.
-After a stable v0.2.0 release, the recommended reference will be
-`hyynb666/statguard@v0.2.0`.
+StatGuard v0.2.0 contains the first stable tagged Composite Action. Use the
+version tag for reproducible workflows. `hyynb666/statguard@main` continues to
+track development and may change after development resumes.
 
 ## Basic use
 
@@ -15,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: hyynb666/statguard@main
+      - uses: hyynb666/statguard@v0.2.0
         with:
           path: .
 ```
@@ -52,7 +49,7 @@ applies. Since the Action runs in `GITHUB_WORKSPACE`, this means its root
 To fail the job when at least one warning or error Finding is present:
 
 ```yaml
-- uses: hyynb666/statguard@main
+- uses: hyynb666/statguard@v0.2.0
   with:
     path: .
     fail-on: warning
@@ -69,7 +66,7 @@ JSON, HTML, and SARIF can be saved for a later workflow step. See the
 [SARIF and Code Scanning guide](sarif.md) for upload patterns. Example JSON:
 
 ```yaml
-- uses: hyynb666/statguard@main
+- uses: hyynb666/statguard@v0.2.0
   with:
     path: .
     format: json
@@ -79,7 +76,7 @@ JSON, HTML, and SARIF can be saved for a later workflow step. See the
 HTML reports can be uploaded by the calling workflow when desired:
 
 ```yaml
-- uses: hyynb666/statguard@main
+- uses: hyynb666/statguard@v0.2.0
   with:
     path: .
     format: html
@@ -112,5 +109,5 @@ requests `security-events: write` permission itself.
   upload policy remain the calling workflow's responsibility.
 - Static findings are limited to documented, resolvable code patterns. No
   finding does not prove that a workflow is statistically sound.
-- The `@main` reference is mutable during v0.2 development. Pin a reviewed
-  commit if a moving development reference is unsuitable for your workflow.
+- `@main` is a mutable development reference. Use `@v0.2.0` for the released
+  Action contract or pin a reviewed commit when required by your policy.

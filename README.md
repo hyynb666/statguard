@@ -1,9 +1,8 @@
 # StatGuard
 
-StatGuard v0.1.0 is the first public Alpha release on GitHub of a conservative
+StatGuard v0.2.0 is the current public Alpha release on GitHub: a conservative
 static analyzer for statistical validity, model evaluation, and reproducibility
-risks in Python scripts and Jupyter Notebooks. The current `main` branch is
-developing toward v0.2.0 (`0.2.0.dev0`). StatGuard parses source without
+risks in Python scripts and Jupyter Notebooks. StatGuard parses source without
 importing or executing submitted code.
 
 ## Why StatGuard?
@@ -13,14 +12,25 @@ workflow risks. It focuses on documented source patterns and traceable data
 lineage; it is not a general-purpose Python linter or a validator of statistical
 correctness. Findings are review prompts, not proof that an analysis is wrong.
 
+## What's new in v0.2.0
+
+- GitHub Composite Action for repository scans.
+- Project policy through `[tool.statguard]` in `pyproject.toml`.
+- SARIF 2.1.0 output and GitHub Code Scanning integration guidance.
+- Workspace-contained Action inputs and outputs with Linux/Windows smoke tests.
+
+This release adds integrations and project configuration; it does not add or
+change detection rules.
+
 ## Current capabilities and limits
 
 The CLI scans individual `.py` and `.ipynb` files or directories recursively,
-reports parse and rule failures, and renders Console, JSON, or HTML results. Python
-and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule, and RuleRegistry
-are available as Python APIs. Import aliases and basic assignment/call provenance
-are available through AnalysisContext.symbols. Limited split and transformation
-provenance is available through AnalysisContext.provenance.
+reports parse and rule failures, and renders Console, JSON, HTML, or SARIF
+results. Python and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule,
+and RuleRegistry are available as Python APIs. Import aliases and basic
+assignment/call provenance are available through AnalysisContext.symbols.
+Limited split and transformation provenance is available through
+AnalysisContext.provenance.
 **ML001–ML006, ML009, ST001 and ST002 are enabled detection rules.** ML001–ML003 report supported
 preprocessing and feature-selection outputs that reach a later train/test split.
 ML004 reports a supported estimator fit that receives test-role features or
@@ -33,8 +43,9 @@ p-value compared with a literal threshold in a potentially repeated `for`
 loop. ST002 reports supported SciPy test calls whose complete result is a bare
 expression or assigned to `_`; it does not imply a bug. See
 [ML001](docs/ml001.md), [ML002](docs/ml002.md), [ML003](docs/ml003.md),
-[ML004](docs/ml004.md), [ML005](docs/ml005.md), [ML006](docs/ml006.md), [ML009](docs/ml009.md), and
-[ST001](docs/st001.md) and [ST002](docs/st002.md) for evidence requirements and limitations.
+[ML004](docs/ml004.md), [ML005](docs/ml005.md), [ML006](docs/ml006.md),
+[ML009](docs/ml009.md), [ST001](docs/st001.md), and [ST002](docs/st002.md) for
+evidence requirements and limitations.
 All eight v0.1 rules in PRD Section 5 are implemented; ML009 is an additional later rule.
 ML009 reports supported fitted preprocessing output passed as `X` to a later
 `cross_val_score` or `cross_validate` call. It reuses component semantics and
@@ -93,13 +104,13 @@ cells or analyze stored outputs. Document order does not establish historical
 kernel execution order, and cross-cell data flow is not modeled. A clean scan
 does not establish that a Notebook or analysis is statistically correct.
 
-## Install v0.1.0
+## Install v0.2.0
 
 Requires Python 3.11+. CI covers Python 3.11–3.14 on Windows and Linux.
 StatGuard is not published to PyPI. Install the tagged source:
 
 ```text
-git clone --branch v0.1.0 --depth 1 https://github.com/hyynb666/statguard.git
+git clone --branch v0.2.0 --depth 1 https://github.com/hyynb666/statguard.git
 cd statguard
 python -m pip install .
 statguard --help
@@ -107,8 +118,9 @@ statguard --version
 python -m statguard --version
 ```
 
-Alternatively, download the wheel attached to the [v0.1.0 GitHub Release](https://github.com/hyynb666/statguard/releases/tag/v0.1.0)
-and install the downloaded file with `python -m pip install <wheel-path>`.
+Alternatively, download the wheel attached to the
+[v0.2.0 GitHub Release](https://github.com/hyynb666/statguard/releases/tag/v0.2.0)
+and install it with `python -m pip install <wheel-path>`.
 
 Activate the environment first, or on Windows run
 `.venv\Scripts\python.exe` and `.venv\Scripts\statguard.exe` directly.
@@ -183,7 +195,7 @@ discovery, and GitHub Action details.
 
 ## GitHub Action
 
-StatGuard can run as a GitHub Actions step from the current development branch:
+StatGuard can run as a GitHub Actions step from the v0.2.0 release tag:
 
 ```yaml
 jobs:
@@ -191,7 +203,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: hyynb666/statguard@main
+      - uses: hyynb666/statguard@v0.2.0
         with:
           path: .
 ```
@@ -201,10 +213,9 @@ report for a workflow to upload, use `format: html` and
 `output: statguard-report.html`, then add your own
 `actions/upload-artifact@v4` step. The Action does not upload artifacts.
 
-**During v0.2 development, `@main` is a moving development reference.** The
-v0.1.0 release does not contain this Action. The first stable tag containing
-the Action is planned to be v0.2.0; use that tag only after it is released.
-See [GitHub Action documentation](docs/github-action.md) for inputs, exclusions,
+StatGuard v0.2.0 is the first stable tagged release containing the Composite
+Action. `@main` continues to track development and may change. See
+[GitHub Action documentation](docs/github-action.md) for inputs, exclusions,
 report formats, and security details.
 
 ## APIs and architecture
@@ -218,7 +229,7 @@ src/statguard/
   analyzer.py            # parser-to-rule execution and structured results
   core/                  # Finding, Evidence, Severity, Confidence, Rule, RuleRegistry
   parsers/               # PythonSourceParser and NotebookParser
-  reporters/             # Console and JSON rendering
+  reporters/             # Console, JSON, HTML, and SARIF rendering
   rules/                 # ML001–ML006, ML009, ST001–ST002 and the built-in registry
 ```
 
@@ -256,8 +267,9 @@ CI tests an installed package and builds an isolated wheel. See
 defines the product scope and rule acceptance criteria.
 
 See also the [Code of Conduct](CODE_OF_CONDUCT.md), [Security Policy](SECURITY.md),
-[v0.1 release audit](docs/release-audit-v0.1.md), and
-[release checklist](docs/release-checklist.md). StatGuard is not published to
+[v0.1 release audit](docs/release-audit-v0.1.md),
+[v0.2 release audit](docs/release-audit-v0.2.md), and
+[v0.2 release checklist](docs/release-checklist-v0.2.md). StatGuard is not published to
 PyPI; install from the tagged source or the GitHub Release wheel.
 
 ## License
