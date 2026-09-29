@@ -41,6 +41,8 @@ def test_repository_markdown_links_resolve_to_local_paths():
     broken: list[str] = []
     for markdown_file in markdown_files:
         text = markdown_file.read_text(encoding="utf-8")
+        # Markdown-looking syntax in inline or fenced code is not a hyperlink.
+        text = re.sub(r"(`+).*?\1", "", text, flags=re.DOTALL)
         for match in MARKDOWN_LINK.finditer(text):
             target = unquote(match.group(1))
             parsed = urlsplit(target)
