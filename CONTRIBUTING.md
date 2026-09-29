@@ -3,7 +3,7 @@
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The foundation includes packaging, CLI scanning, Console/JSON reporting, public
 interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
-ML001–ML004 and ST001 are documented in `docs/`. New rule work should follow the evidence,
+ML001–ML005 and ST001 are documented in `docs/`. New rule work should follow the evidence,
 abstention, testing, and documentation conventions already established there.
 
 ## Set up and validate
@@ -151,6 +151,16 @@ roles for its actual feature and/or label input. Do not treat `predict`,
 supported fitting evidence. Add negative fixtures for misleading names,
 custom estimators, train-only fitting, and unresolved scope or lineage. Findings
 describe potential risk without claiming a measured effect.
+
+## ML005 changes
+
+Follow the [ML005 contract](docs/ml005.md). Require a resolved supported
+sklearn cross-validation API and a proven fitted-transform output reaching its
+`X` argument in the same scope and source order. Reuse component configuration
+semantics and `ProvenanceTracker.fitted_transforms` evidence for separate
+`fit`/`transform`; do not infer behavior through wrappers or inspect Pipeline
+internals. Test aliases, rebindings, CV call identity, fold-local Pipeline use,
+component semantics, Notebook locations, outputs and no-execution behavior.
 
 ## ST001 changes
 

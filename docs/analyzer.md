@@ -5,7 +5,7 @@ read-only view of one successfully parsed Python unit. `statguard.analyzer.Analy
 connects the existing parsers and RuleRegistry, runs enabled rules, and returns
 structured results. The CLI, scanner and reporters wrap this API; see
 [reporting.md](reporting.md). The CLI enables [ML001](ml001.md),
-[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), and [ST001](st001.md); Analyzer itself
+[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), and [ST001](st001.md); Analyzer itself
 still uses the explicitly supplied registry. Cross-unit data-flow analysis is
 not included.
 
@@ -125,12 +125,13 @@ Findings. System-level interrupts such as KeyboardInterrupt are not swallowed.
 The lazily constructed AnalysisContext also exposes the same cached
 `SymbolResolver` and `ProvenanceTracker` used by rule execution. Provenance
 includes bounded same-instance fit/transform evidence for the allowlisted
-ML001–ML003 transformers. That evidence is confined to one supported AST scope
-and is not shared across Notebook cells or function invocations.
+ML001–ML003 components. ML005 reuses this evidence for cross-validation input
+lineage. It is confined to one supported AST scope and is not shared across
+Notebook cells or function invocations.
 
 The framework validates result shape and identity; it cannot prove a rule's
 statistical reasoning, verify every source coordinate, or prevent a trusted
 rule from deliberately executing code. Rule authors must follow AGENTS.md and
 test their own evidence and abstention behavior. The built-in [ML001](ml001.md),
-[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), and [ST001](st001.md) implementations
+[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), and [ST001](st001.md) implementations
 are documented separately.

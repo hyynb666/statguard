@@ -13,14 +13,17 @@ and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule, and RuleRegistry
 are available as Python APIs. Import aliases and basic assignment/call provenance
 are available through AnalysisContext.symbols. Limited split and transformation
 provenance is available through AnalysisContext.provenance.
-**ML001–ML004 and ST001 are enabled detection rules.** ML001–ML003 report supported
+**ML001–ML005 and ST001 are enabled detection rules.** ML001–ML003 report supported
 preprocessing and feature-selection outputs that reach a later train/test split.
 ML004 reports a supported estimator fit that receives test-role features or
 labels. ST001 reports a supported SciPy significance-test p-value compared
 with a literal threshold in a potentially repeated `for` loop. See
 [ML001](docs/ml001.md), [ML002](docs/ml002.md), [ML003](docs/ml003.md),
-[ML004](docs/ml004.md), and [ST001](docs/st001.md) for evidence requirements
+[ML004](docs/ml004.md), [ML005](docs/ml005.md), and [ST001](docs/st001.md) for evidence requirements
 and limitations.
+ML005 reports supported fitted preprocessing output passed as `X` to a later
+`cross_val_score` or `cross_validate` call. It reuses component semantics and
+same-scope provenance from ML001–ML003; it does not inspect Pipeline internals.
 A clean scan does not establish statistical correctness. No cross-cell data flow, directory
 configuration file, or Notebook execution history analysis is implemented.
 
@@ -107,7 +110,7 @@ src/statguard/
   core/                  # Finding, Evidence, Severity, Confidence, Rule, RuleRegistry
   parsers/               # PythonSourceParser and NotebookParser
   reporters/             # Console and JSON rendering
-  rules/                 # ML001–ML004, ST001 and the built-in registry
+  rules/                 # ML001–ML005, ST001 and the built-in registry
 ```
 
 The Python parser uses `ast` and keeps original AST nodes and Unicode-aware
@@ -147,6 +150,6 @@ defines the product scope and rule acceptance criteria.
 
 StatGuard is available under the [MIT License](LICENSE).
 
-Disable ML001, ML002, ML003, ML004, or ST001 independently with
+Disable ML001, ML002, ML003, ML004, ML005, or ST001 independently with
 `--disable-rule RULE_ID`.
 Warning findings exit 0 by default; use `--fail-on warning` to exit 1.
