@@ -107,6 +107,8 @@ Examples below describe typical cases. Exact variable names are illustrative; im
 
 ### ML006 — Random split without a fixed seed
 
+**Implementation status:** Implemented; see [the ML006 rule guide](ml006.md).
+
 **Trigger:** A resolved random `train_test_split` call omits `random_state` or explicitly passes `None`. Report a confirmed code pattern with a potential reproducibility risk.
 
 **Do not trigger:** A concrete literal seed or traceable non-`None` seed is supplied. **Boundary:** An unknown `random_state` expression is undetermined; deterministic splitting explicitly configured with `shuffle=False` must not be reported. **Acceptance:** Cover omitted/`None`, fixed seed, unknown expression, and non-shuffled split.

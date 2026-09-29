@@ -337,6 +337,7 @@ def test_default_registry_and_rule_disabling_are_independent():
         "ML003",
         "ML004",
         "ML005",
+        "ML006",
         "ML009",
         "ST001",
     ]
@@ -356,7 +357,9 @@ def test_default_registry_and_rule_disabling_are_independent():
         "c=SelectKBest(score_func=f_classif).fit_transform(C,y)",
         "train_c,test_c=train_test_split(c)",
     )
-    findings = Analyzer(default_registry()).analyze_source(all_rules).findings
+    registry = default_registry()
+    registry.disable("ML006")
+    findings = Analyzer(registry).analyze_source(all_rules).findings
     assert [finding.rule_id for finding in findings] == ["ML001", "ML002", "ML003"]
     for disabled, expected in [
         ("ML001", ["ML002", "ML003"]),
@@ -366,6 +369,7 @@ def test_default_registry_and_rule_disabling_are_independent():
     ]:
         registry = default_registry()
         registry.disable(disabled)
+        registry.disable("ML006")
         assert [
             finding.rule_id for finding in Analyzer(registry).analyze_source(all_rules).findings
         ] == expected
@@ -384,7 +388,18 @@ def test_real_cli_json_report_and_thresholds(tmp_path, args, returncode, count):
     path = tmp_path / "risk.py"
     path.write_text(risk(), encoding="utf-8")
     result = subprocess.run(
-        [sys.executable, "-m", "statguard", "check", str(path), "--format", "json", *args],
+        [
+            sys.executable,
+            "-m",
+            "statguard",
+            "check",
+            str(path),
+            "--format",
+            "json",
+            "--disable-rule",
+            "ML006",
+            *args,
+        ],
         capture_output=True,
         text=True,
         check=False,

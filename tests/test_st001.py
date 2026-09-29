@@ -471,19 +471,19 @@ def test_default_registration_disable_and_cli_console_json_html(tmp_path):
         encoding="utf-8",
     )
     combined_findings = json.loads(run(combined_path, "--format", "json").stdout)["findings"]
-    assert {item["rule_id"] for item in combined_findings} == {"ML001", "ST001"}
+    assert {item["rule_id"] for item in combined_findings} == {"ML001", "ML006", "ST001"}
     assert {
         item["rule_id"]
         for item in json.loads(
             run(combined_path, "--format", "json", "--disable-rule", "ST001").stdout
         )["findings"]
-    } == {"ML001"}
+    } == {"ML001", "ML006"}
     assert {
         item["rule_id"]
         for item in json.loads(
             run(combined_path, "--format", "json", "--disable-rule", "ML001").stdout
         )["findings"]
-    } == {"ST001"}
+    } == {"ML006", "ST001"}
 
 
 def test_analysis_source_is_never_executed(tmp_path):

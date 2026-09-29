@@ -296,15 +296,21 @@ def test_ml004_coexists_with_ml001_and_each_rule_disables_independently():
         "model.fit(X_test, y_test)",
     )
     result = Analyzer(default_registry()).analyze_source(source)
-    assert [finding.rule_id for finding in result.findings] == ["ML001", "ML004"]
+    assert [finding.rule_id for finding in result.findings] == ["ML001", "ML006", "ML004"]
 
     registry = default_registry()
     registry.disable("ML004")
-    assert [f.rule_id for f in Analyzer(registry).analyze_source(source).findings] == ["ML001"]
+    assert [f.rule_id for f in Analyzer(registry).analyze_source(source).findings] == [
+        "ML001",
+        "ML006",
+    ]
 
     registry = default_registry()
     registry.disable("ML001")
-    assert [f.rule_id for f in Analyzer(registry).analyze_source(source).findings] == ["ML004"]
+    assert [f.rule_id for f in Analyzer(registry).analyze_source(source).findings] == [
+        "ML006",
+        "ML004",
+    ]
 
 
 def test_known_supported_transform_preserves_test_role():
@@ -497,7 +503,18 @@ def test_cli_json_and_warning_thresholds(tmp_path, args, code_expected, count):
     path = tmp_path / "risk.py"
     path.write_text(fit_source(), encoding="utf-8")
     result = subprocess.run(
-        [sys.executable, "-m", "statguard", "check", str(path), "--format", "json", *args],
+        [
+            sys.executable,
+            "-m",
+            "statguard",
+            "check",
+            str(path),
+            "--format",
+            "json",
+            "--disable-rule",
+            "ML006",
+            *args,
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -554,7 +571,10 @@ def test_cli_console_and_no_python_or_notebook_output_execution(tmp_path):
         check=False,
     )
     assert nb.returncode == 0
-    assert json.loads(nb.stdout)["findings"][0]["cell_index"] == 1
+    ml004_finding = next(
+        finding for finding in json.loads(nb.stdout)["findings"] if finding["rule_id"] == "ML004"
+    )
+    assert ml004_finding["cell_index"] == 1
     assert not py_marker.exists()
     assert not output_marker.exists()
 

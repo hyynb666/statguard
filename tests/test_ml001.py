@@ -20,7 +20,9 @@ RISK = IMPORTS + "scaler = S()\nscaled = scaler.fit_transform(X)\na, b = split(s
 
 
 def analyze(source):
-    result = Analyzer(default_registry()).analyze_source(source, path="analysis.py")
+    registry = default_registry()
+    registry.disable("ML006")
+    result = Analyzer(registry).analyze_source(source, path="analysis.py")
     assert not result.errors
     return result.findings
 
@@ -156,7 +158,9 @@ def test_notebook_independence_and_locations():
             }
         )
 
-    analyzer = Analyzer(default_registry())
+    registry = default_registry()
+    registry.disable("ML006")
+    analyzer = Analyzer(registry)
     result = analyzer.analyze_notebook_json(book([RISK]))
     assert not result.errors and len(result.findings) == 1
     assert (result.findings[0].cell_index, result.findings[0].cell, result.findings[0].line) == (
@@ -175,6 +179,7 @@ def test_notebook_independence_and_locations():
 def test_disabled_rule_is_never_executed(monkeypatch):
     registry = default_registry()
     registry.disable("ML001")
+    registry.disable("ML006")
 
     def forbidden(*args):
         raise AssertionError("disabled rule executed")
@@ -197,7 +202,18 @@ def test_real_cli_json_and_thresholds(tmp_path, args, code):
     path = tmp_path / "risk.py"
     path.write_text(RISK, encoding="utf-8")
     result = subprocess.run(
-        [sys.executable, "-m", "statguard", "check", str(path), "--format", "json", *args],
+        [
+            sys.executable,
+            "-m",
+            "statguard",
+            "check",
+            str(path),
+            "--format",
+            "json",
+            "--disable-rule",
+            "ML006",
+            *args,
+        ],
         capture_output=True,
         text=True,
         check=False,

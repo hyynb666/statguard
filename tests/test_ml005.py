@@ -207,6 +207,7 @@ def test_pipeline_and_ml009_rule_identity_remain_separate():
         "ML003",
         "ML004",
         "ML005",
+        "ML006",
         "ML009",
         "ST001",
     }
@@ -251,7 +252,16 @@ def test_notebook_cell_positions_and_cross_cell_isolation():
 
 def run_cli(path, *args):
     return subprocess.run(
-        [sys.executable, "-m", "statguard", "check", str(path), *args],
+        [
+            sys.executable,
+            "-m",
+            "statguard",
+            "check",
+            str(path),
+            *args,
+            "--disable-rule",
+            "ML006",
+        ],
         capture_output=True,
         text=True,
         encoding="utf-8",

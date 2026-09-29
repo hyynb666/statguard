@@ -418,8 +418,18 @@ def test_ml001_and_ml009_can_report_independent_split_and_cv_risks():
         ),
         path="analysis.py",
     )
-    assert {finding.rule_id for finding in result.findings} == {"ML001", "ML009", "ST001"}
-    assert [finding.rule_id for finding in result.findings] == ["ML001", "ML009", "ST001"]
+    assert {finding.rule_id for finding in result.findings} == {
+        "ML001",
+        "ML006",
+        "ML009",
+        "ST001",
+    }
+    assert [finding.rule_id for finding in result.findings] == [
+        "ML001",
+        "ML009",
+        "ML006",
+        "ST001",
+    ]
 
 
 def test_notebook_cell_location_and_cross_cell_isolation():
@@ -595,7 +605,16 @@ def test_scanning_python_and_notebook_never_executes_code_or_output(tmp_path: Pa
 def test_rule_is_default_registered_but_individually_selectable():
     registry = default_registry()
     registered_ids = [rule.rule_id for rule in registry.iter_enabled()]
-    assert registered_ids == ["ML001", "ML002", "ML003", "ML004", "ML005", "ML009", "ST001"]
+    assert registered_ids == [
+        "ML001",
+        "ML002",
+        "ML003",
+        "ML004",
+        "ML005",
+        "ML006",
+        "ML009",
+        "ST001",
+    ]
     assert len(registered_ids) == len(set(registered_ids))
     assert "ML005" in registered_ids
     registry.disable("ML009")
