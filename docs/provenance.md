@@ -130,7 +130,7 @@ only the provenance adapter interprets recognized split projections. The resolve
 also exposes its parser-owned `parsed` unit to reject mismatched tracker inputs.
 Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. The
 provenance layer itself emits no diagnostics. [ML001](ml001.md),
-[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), and [ML009](ml009.md)
+[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), and [ML009](ml009.md)
 consume these facts without changing the JSON report schema. ML009 follows
 direct fitted-transform outputs through known aliases to an exact sklearn CV
 call's `X` argument; it does not add another provenance graph.
@@ -139,6 +139,12 @@ ML004 uses the split ID and `train`/`test` role already carried by provenance
 to verify the actual `X` and `y` bindings passed to a supported estimator's
 `fit` call. It does not extend provenance with estimator runtime state, infer
 roles from names, or expand Pipeline internals.
+
+ML005 uses those same roles to correlate a supported estimator's training
+`fit` and `score` with one split. It reports only after checking that no
+same-instance, same-fit, same-split held-out `score` was observed in the
+supported scope. Unknown scoring inputs, unresolved model escapes, and
+unsupported estimator state changes cause conservative abstention.
 
 ## Review robustness
 

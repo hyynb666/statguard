@@ -6,6 +6,7 @@ from statguard.rules.ml001 import ML001
 from statguard.rules.ml002 import ML002
 from statguard.rules.ml003 import ML003
 from statguard.rules.ml004 import ML004
+from statguard.rules.ml005 import ML005
 from statguard.rules.ml009 import ML009
 from statguard.rules.st001 import ST001
 
@@ -17,9 +18,19 @@ def default_registry() -> RuleRegistry[AnalysisContext]:
     registry.register(ML002())
     registry.register(ML003())
     registry.register(ML004())
+    registry.register(ML005())
     registry.register(ML009())
     registry.register(ST001())
     return registry
 
 
-__all__ = ["ML001", "ML002", "ML003", "ML004", "ML009", "ST001", "default_registry"]
+__all__ = [
+    "ML001",
+    "ML002",
+    "ML003",
+    "ML004",
+    "ML005",
+    "ML009",
+    "ST001",
+    "default_registry",
+]

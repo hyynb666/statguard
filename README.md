@@ -13,19 +13,22 @@ and Notebook parsing, AnalysisContext, Analyzer, Finding, Rule, and RuleRegistry
 are available as Python APIs. Import aliases and basic assignment/call provenance
 are available through AnalysisContext.symbols. Limited split and transformation
 provenance is available through AnalysisContext.provenance.
-**ML001–ML004, ML009 and ST001 are enabled detection rules.** ML001–ML003 report supported
+**ML001–ML005, ML009 and ST001 are enabled detection rules.** ML001–ML003 report supported
 preprocessing and feature-selection outputs that reach a later train/test split.
 ML004 reports a supported estimator fit that receives test-role features or
-labels. ST001 reports a supported SciPy significance-test p-value compared
-with a literal threshold in a potentially repeated `for` loop. See
+labels. ML005 reports a supported sklearn estimator scored on its training
+split without a corresponding held-out score in that model episode and scope;
+training scores are not inherently wrong. ST001 reports a supported SciPy
+significance-test p-value compared with a literal threshold in a potentially
+repeated `for` loop. See
 [ML001](docs/ml001.md), [ML002](docs/ml002.md), [ML003](docs/ml003.md),
-[ML004](docs/ml004.md), [ML009](docs/ml009.md), and [ST001](docs/st001.md) for evidence requirements
-and limitations.
+[ML004](docs/ml004.md), [ML005](docs/ml005.md), [ML009](docs/ml009.md), and
+[ST001](docs/st001.md) for evidence requirements and limitations.
 ML009 reports supported fitted preprocessing output passed as `X` to a later
 `cross_val_score` or `cross_validate` call. It reuses component semantics and
 same-scope provenance from ML001–ML003; it does not inspect Pipeline internals.
-PRD rule ML005 remains reserved for training-only evaluation and is not
-implemented or enabled; the cross-validation rule in Issue #17 is ML009.
+ML009 remains the separate cross-validation preprocessing rule; ML005 retains
+its PRD meaning of training-only evaluation.
 A clean scan does not establish statistical correctness. No cross-cell data flow, directory
 configuration file, or Notebook execution history analysis is implemented.
 
@@ -112,7 +115,7 @@ src/statguard/
   core/                  # Finding, Evidence, Severity, Confidence, Rule, RuleRegistry
   parsers/               # PythonSourceParser and NotebookParser
   reporters/             # Console and JSON rendering
-  rules/                 # ML001–ML004, ML009, ST001 and the built-in registry
+  rules/                 # ML001–ML005, ML009, ST001 and the built-in registry
 ```
 
 The Python parser uses `ast` and keeps original AST nodes and Unicode-aware
@@ -152,6 +155,6 @@ defines the product scope and rule acceptance criteria.
 
 StatGuard is available under the [MIT License](LICENSE).
 
-Disable ML001, ML002, ML003, ML004, ML009, or ST001 independently with
+Disable ML001, ML002, ML003, ML004, ML005, ML009, or ST001 independently with
 `--disable-rule RULE_ID`.
 Warning findings exit 0 by default; use `--fail-on warning` to exit 1.
