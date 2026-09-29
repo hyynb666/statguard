@@ -41,8 +41,8 @@ ML009 reports supported fitted preprocessing output passed as `X` to a later
 same-scope provenance from ML001–ML003; it does not inspect Pipeline internals.
 ML009 remains the separate cross-validation preprocessing rule; ML005 retains
 its PRD meaning of training-only evaluation.
-A clean scan does not establish statistical correctness. No cross-cell data flow, directory
-configuration file, or Notebook execution history analysis is implemented.
+A clean scan does not establish statistical correctness. No cross-cell data flow
+or Notebook execution history analysis is implemented.
 
 ## Rule matrix
 
@@ -164,6 +164,18 @@ Warnings and informational findings do not fail by default. `--fail-on`
 explicitly sets a threshold. An undetermined notice does not trigger it.
 Disable ML001, ML002, ML003, ML004, ML005, ML006, ML009, ST001, or ST002
 independently with `--disable-rule RULE_ID`.
+
+### Project configuration
+
+StatGuard can read `[tool.statguard]` from `pyproject.toml`. The supported
+project policies are `exclude`, `disable-rules`, and `fail-on`; invocation
+options such as path, report format, and output remain CLI-only. By default,
+only `./pyproject.toml` in the current working directory is discovered. Use
+`--config PATH` to select another TOML file or `--no-config` to bypass
+discovery. CLI exclusions and disabled rules are appended to project values
+and deduplicated in order; an explicit `--fail-on` overrides the configured
+threshold. See [project configuration](docs/configuration.md) for validation,
+discovery, and GitHub Action details.
 
 ## GitHub Action
 

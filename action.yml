@@ -31,6 +31,14 @@ inputs:
     description: Optional newline-separated paths to exclude from the scan.
     required: false
     default: ""
+  config:
+    description: Optional TOML configuration path, relative to GITHUB_WORKSPACE.
+    required: false
+    default: ""
+  no-config:
+    description: Disable automatic pyproject.toml discovery (true or false).
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -55,5 +63,7 @@ runs:
         INPUT_FAIL_ON: ${{ inputs['fail-on'] }}
         INPUT_DISABLE_RULES: ${{ inputs['disable-rules'] }}
         INPUT_EXCLUDE: ${{ inputs.exclude }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_NO_CONFIG: ${{ inputs['no-config'] }}
       run: |
         python -c "import os, runpy; runpy.run_path(os.path.join(os.environ['STATGUARD_ACTION_PATH'], 'scripts', 'run_github_action.py'), run_name='__main__')"

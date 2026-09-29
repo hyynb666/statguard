@@ -7,6 +7,7 @@ from pathlib import Path
 
 from statguard import __version__
 from statguard.analyzer import Analyzer
+from statguard.config import ConfigError, StatGuardConfig, discover_config, load_config
 from statguard.context import AnalysisContext
 from statguard.core import RuleRegistry
 from statguard.reporters import render_console, render_html, render_json
@@ -51,20 +52,51 @@ def main(
         metavar="RULE_ID",
         help="Disable a registered rule (repeatable)",
     )
+    config_group = check.add_mutually_exclusive_group()
+    config_group.add_argument(
+        "--config", metavar="PATH", help="Read project policy from a TOML file"
+    )
+    config_group.add_argument(
+        "--no-config", action="store_true", help="Disable automatic pyproject.toml discovery"
+    )
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
 
-    selected = registry if registry is not None else default_registry()
-    for rule_id in args.disable_rule:
+    selected = _copy_registry(registry if registry is not None else default_registry())
+    try:
+        if args.config is not None:
+            config = load_config(args.config)
+        elif args.no_config:
+            config = StatGuardConfig()
+        else:
+            automatic_config = Path.cwd() / "pyproject.toml"
+            config = discover_config(automatic_config)
+    except ConfigError as error:
+        print(f"statguard: error: {error}", file=sys.stderr)
+        return 2
+
+    disable_rules = _stable_unique((*config.disable_rules, *args.disable_rule))
+    for rule_id in disable_rules:
+        try:
+            selected.get(rule_id)
+        except KeyError:
+            if rule_id in config.disable_rules:
+                print(
+                    f"statguard: error: configuration references unknown rule ID: {rule_id}",
+                    file=sys.stderr,
+                )
+                return 2
+            parser.error(f"Unknown rule ID: {rule_id}")
+    for rule_id in disable_rules:
         try:
             selected.disable(rule_id)
         except KeyError:
             parser.error(f"Unknown rule ID: {rule_id}")
     scanner = Scanner(Analyzer(selected))
     try:
-        report = scanner.scan(args.path, exclude=tuple(args.exclude))
+        report = scanner.scan(args.path, exclude=_stable_unique((*config.exclude, *args.exclude)))
     except ValueError as error:
         print(f"statguard: error: {error}", file=sys.stderr)
         return 2
@@ -89,6 +121,20 @@ def main(
 
     if report.analysis_errors:
         return 2
-    if reaches_threshold(report, args.fail_on):
+    fail_on = args.fail_on if args.fail_on is not None else config.fail_on
+    if reaches_threshold(report, fail_on):
         return 1
     return 0
+
+
+def _stable_unique(values: Sequence[str]) -> tuple[str, ...]:
+    """Remove repeated policy values without changing their first-seen order."""
+    return tuple(dict.fromkeys(values))
+
+
+def _copy_registry(registry: RuleRegistry[AnalysisContext]) -> RuleRegistry[AnalysisContext]:
+    """Snapshot rule objects and enabled state so one CLI run cannot leak policy."""
+    snapshot: RuleRegistry[AnalysisContext] = RuleRegistry()
+    for rule in registry:
+        snapshot.register(rule, enabled=registry.is_enabled(rule.rule_id))
+    return snapshot

@@ -36,9 +36,16 @@ files or Notebook cells.
 | `fail-on` | empty | Empty, `warning`, or `error`. Empty preserves the CLI default where Findings do not fail the step. |
 | `disable-rules` | empty | Comma-separated rule IDs, for example `ML006, ST002`. The Action does not maintain its own rule registry. |
 | `exclude` | empty | Newline-separated relative exclusions, passed as repeated `--exclude` arguments. Blank lines are ignored. |
+| `config` | empty | Optional TOML configuration path, relative to `GITHUB_WORKSPACE`; passed to `--config`. Resolved paths must remain inside the workspace. |
+| `no-config` | `false` | Exact `true` or `false`. `true` passes `--no-config`; it cannot be combined with a nonempty `config`. |
 
 Exclusions use the same path semantics as the CLI: they are relative to the
 selected scan root. Spaces inside paths are preserved.
+
+If `config` is empty, StatGuard's normal current-working-directory discovery
+applies. Since the Action runs in `GITHUB_WORKSPACE`, this means its root
+`pyproject.toml`. Set `no-config: true` to bypass it. See the
+[configuration guide](configuration.md) for supported keys and precedence.
 
 ## Failure thresholds
 
@@ -92,7 +99,8 @@ access are controlled by the caller's workflow.
   or clone the repository again.
 - Inputs are translated by a small Python standard-library runner into an
   argument list and launched without a shell. Input text is never interpolated
-  into a shell command. Scan targets are restricted to `GITHUB_WORKSPACE`.
+  into a shell command. Scan targets and explicit configuration paths are
+  restricted to `GITHUB_WORKSPACE`, including resolved symlinks.
 - StatGuard parses source statically. It does not import or execute analyzed
   Python or Notebook code and does not analyze Notebook outputs.
 - GitHub Actions permissions, runner selection, dependency policy, and artifact

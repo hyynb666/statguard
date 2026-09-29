@@ -59,8 +59,11 @@ def test_readme_distinguishes_stable_release_from_action_development():
 
 def test_unreleased_changelog_records_action_without_changing_release_history():
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    unreleased = changelog.split("## [0.1.0]", maxsplit=1)[0]
 
-    assert "## [Unreleased]\n\n### Added\n\n- GitHub composite Action integration" in changelog
+    assert "## [Unreleased]\n\n### Added" in unreleased
+    assert "- Project policy from `[tool.statguard]`" in unreleased
+    assert "- GitHub composite Action integration" in unreleased
     assert "## [0.1.0] - 2026-09-29" in changelog
 
 
