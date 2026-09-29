@@ -1,6 +1,6 @@
 # CLI scan and report contract
 
-The scanner and Analyzer expose report data for Console, JSON, and HTML output.
+The scanner and Analyzer expose report data for Console, JSON, HTML, and SARIF output.
 The default registry contains [ML001](ml001.md), [ML002](ml002.md),
 [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), [ML006](ml006.md), [ML009](ml009.md), [ST001](st001.md), and [ST002](st002.md).
 
@@ -9,8 +9,9 @@ The default registry contains [ML001](ml001.md), [ML002](ml002.md),
 `statguard.scanner.Scanner(analyzer).scan(path, *, exclude=())` returns
 `ScanReport` with per-file `AnalysisResult` records, scan-level errors and
 notices, aggregate Findings and errors, and the selected-rule count.
-`statguard.reporters.render_console(report)`, `render_json(report)`, and
-`render_html(report)` are pure formatters. None invokes parsers or rules. CLI
+`statguard.reporters.render_console(report)`, `render_json(report)`,
+`render_html(report)`, and `render_sarif(report, ...)` are pure formatters.
+None invokes parsers or rules. CLI
 `main(argv=None, *, registry=None)` accepts an explicit registry for trusted integrations and
 tests; each CLI invocation snapshots its selected rules and enabled state, then
 applies invocation policy without mutating the caller's registry. The installed
@@ -73,8 +74,9 @@ outputs are never passed into the reporter. See [the HTML report guide](html-rep
 for its interaction, security model, and limits.
 `--output` writes the selected format as UTF-8, creates missing parent
 directories, and refuses to replace a scanned input. A write failure returns 2
-and writes a short message to stderr. Without `--output`, HTML is written as a
-complete document to stdout, with no status messages mixed into it.
+and writes a short message to stderr. Without `--output`, JSON and SARIF stdout
+contain only their serialized document; HTML is a complete document without
+status text.
 
 Exit 2 takes precedence if any input, parse, rule, configuration, or output
 error occurs. Otherwise an effective `warning` threshold exits 1 for
@@ -83,3 +85,34 @@ comes from an explicit `--fail-on` first, then `[tool.statguard].fail-on`, or
 is absent by default. An undetermined evidence category never meets the
 threshold. Configuration policy and precedence are documented in
 [configuration.md](configuration.md); severity suppression is not implemented.
+
+## SARIF 2.1.0
+
+`render_sarif(report, *, base_path=None, rule_metadata=None)` emits a standalone
+SARIF 2.1.0 log using only the standard library. It is a separate format from
+the unchanged JSON schema 1.0. The CLI supplies the active registry metadata;
+unknown/custom rule IDs without matching metadata receive a generic descriptor
+rather than built-in rule details. Findings map to one result each, with
+StatGuard severity mapped to SARIF `error`, `warning`, or `note` and confidence,
+evidence, risk, and suggestion carried in `properties`. Stable SHA-256
+`statguardFingerprint/v1` values are based on normalized finding identity; they
+are not GitHub CodeQL fingerprints. For out-of-workspace paths, fingerprints
+use a marker and basename rather than absolute machine paths, so different
+external files sharing the same basename can share a fingerprint. SARIF
+contains no source snippets, AST,
+Notebook outputs, timestamps, or external-service data.
+
+For `.py` files, locations use a repository-relative forward-slash URI when
+inside `base_path` and preserve the one-based Finding line/column. An outside
+file uses a `file:` URI, which is not a portable Code Scanning source link. For
+`.ipynb`, SARIF identifies the Notebook artifact but deliberately omits a
+physical region: `statguardCell`, `statguardCellIndex`, `statguardCellLine`,
+and `statguardCellColumn` preserve code-cell coordinates without claiming they
+are lines in the raw JSON file. GitHub may therefore display a finding
+without a source-line annotation. Scan errors and notices are invocation
+notifications, not results; errors set `executionSuccessful` to false, while
+Findings do not. Output is deterministic, ASCII-escaped JSON with a final
+newline and no timestamps.
+
+See the [SARIF and Code Scanning guide](sarif.md) for Action usage and upload
+permissions.

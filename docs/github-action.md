@@ -31,7 +31,7 @@ files or Notebook cells.
 | --- | --- | --- |
 | `path` | `.` | Python file, Notebook, or directory to scan, relative to `GITHUB_WORKSPACE`. |
 | `python-version` | `3.12` | Python version configured by `actions/setup-python@v6`. The project CI currently covers Python 3.11–3.14. |
-| `format` | `console` | `console`, `json`, or `html`, passed to `statguard check --format`. |
+| `format` | `console` | `console`, `json`, `html`, or `sarif`, passed to `statguard check --format`. |
 | `output` | empty | Optional report path, passed to `--output`; omitted when empty. Relative paths resolve from `GITHUB_WORKSPACE`. |
 | `fail-on` | empty | Empty, `warning`, or `error`. Empty preserves the CLI default where Findings do not fail the step. |
 | `disable-rules` | empty | Comma-separated rule IDs, for example `ML006, ST002`. The Action does not maintain its own rule registry. |
@@ -65,7 +65,8 @@ errors, rule errors, and report errors preserve the CLI's exit code 2.
 
 ## Reports
 
-JSON can be saved for a later workflow step:
+JSON, HTML, and SARIF can be saved for a later workflow step. See the
+[SARIF and Code Scanning guide](sarif.md) for upload patterns. Example JSON:
 
 ```yaml
 - uses: hyynb666/statguard@main
@@ -92,6 +93,9 @@ HTML reports can be uploaded by the calling workflow when desired:
 The StatGuard Action itself does not upload artifacts. Artifact retention and
 access are controlled by the caller's workflow.
 
+For SARIF, the Action only writes the report. It never uploads results or
+requests `security-events: write` permission itself.
+
 ## Security model and limitations
 
 - The Action installs StatGuard from the same `GITHUB_ACTION_PATH` revision
@@ -100,7 +104,8 @@ access are controlled by the caller's workflow.
 - Inputs are translated by a small Python standard-library runner into an
   argument list and launched without a shell. Input text is never interpolated
   into a shell command. Scan targets and explicit configuration paths are
-  restricted to `GITHUB_WORKSPACE`, including resolved symlinks.
+  restricted to `GITHUB_WORKSPACE`, including resolved symlinks. Output paths
+  are also constrained to that workspace, including resolved parent symlinks.
 - StatGuard parses source statically. It does not import or execute analyzed
   Python or Notebook code and does not analyze Notebook outputs.
 - GitHub Actions permissions, runner selection, dependency policy, and artifact
