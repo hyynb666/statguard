@@ -595,8 +595,8 @@ def test_scanning_python_and_notebook_never_executes_code_or_output(tmp_path: Pa
 def test_rule_is_default_registered_but_individually_selectable():
     registry = default_registry()
     registered_ids = [rule.rule_id for rule in registry.iter_enabled()]
-    assert registered_ids == ["ML001", "ML002", "ML003", "ML004", "ML009", "ST001"]
+    assert registered_ids == ["ML001", "ML002", "ML003", "ML004", "ML005", "ML009", "ST001"]
     assert len(registered_ids) == len(set(registered_ids))
-    assert "ML005" not in registered_ids
+    assert "ML005" in registered_ids
     registry.disable("ML009")
     assert "ML009" not in {rule.rule_id for rule in registry.iter_enabled()}

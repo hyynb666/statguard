@@ -3,7 +3,7 @@
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The foundation includes packaging, CLI scanning, Console/JSON reporting, public
 interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
-ML001–ML004, ML009 and ST001 are documented in `docs/`. New rule work should follow the evidence,
+ML001–ML005, ML009 and ST001 are documented in `docs/`. New rule work should follow the evidence,
 abstention, testing, and documentation conventions already established there.
 
 ## Set up and validate
@@ -151,6 +151,17 @@ roles for its actual feature and/or label input. Do not treat `predict`,
 supported fitting evidence. Add negative fixtures for misleading names,
 custom estimators, train-only fitting, and unresolved scope or lineage. Findings
 describe potential risk without claiming a measured effect.
+
+## ML005 changes
+
+Follow the [ML005 contract](docs/ml005.md). Require an exact supported
+estimator, train/test roles from the same `train_test_split`, a train-role fit,
+and a training-role `.score()` call for the same fit episode. Decide only after
+the bounded scope is scanned so a corresponding held-out score can suppress
+the candidate. Training score is useful in many workflows and is not itself an
+error. Do not infer absence outside the analyzed scope or count a different
+model, split, Notebook cell, metric helper, or cross-validation clone as a
+matching held-out score.
 
 ## ML009 changes
 
