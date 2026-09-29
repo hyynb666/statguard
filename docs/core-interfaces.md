@@ -5,7 +5,7 @@
 observations, rule contracts, and explicit rule selection. The separate
 [Analysis Context and Analyzer](analyzer.md) now connect them to existing parsers.
 The CLI provides reports and enables [ML001](ml001.md), [ML002](ml002.md),
-[ML003](ml003.md), and [ML004](ml004.md) through a separate default registry;
+[ML003](ml003.md), [ML004](ml004.md), and [ST001](st001.md) through a separate default registry;
 the core registry itself remains explicitly populated.
 All implementation dependencies are in the Python standard library.
 

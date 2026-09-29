@@ -3,7 +3,7 @@
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The foundation includes packaging, CLI scanning, Console/JSON reporting, public
 interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
-ML001–ML004 are documented in `docs/`. New rule work should follow the evidence,
+ML001–ML004 and ST001 are documented in `docs/`. New rule work should follow the evidence,
 abstention, testing, and documentation conventions already established there.
 
 ## Set up and validate
@@ -151,3 +151,12 @@ roles for its actual feature and/or label input. Do not treat `predict`,
 supported fitting evidence. Add negative fixtures for misleading names,
 custom estimators, train-only fitting, and unresolved scope or lineage. Findings
 describe potential risk without claiming a measured effect.
+
+## ST001 changes
+
+Follow the [ST001 contract](docs/st001.md). Require an explicit supported
+`scipy.stats` binding, a p-value derived from its result, and a literal
+significance-threshold comparison inside a potentially repeated `for` loop.
+Do not infer test identity from names, treat separate calls as a hypothesis
+family by themselves, or claim that a particular correction is always
+required. Keep correction evidence tied to the decisions actually made.

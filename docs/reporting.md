@@ -2,7 +2,7 @@
 
 The scanner and Analyzer expose report data for Console, JSON, and HTML output.
 The default registry contains [ML001](ml001.md), [ML002](ml002.md),
-[ML003](ml003.md), and [ML004](ml004.md).
+[ML003](ml003.md), [ML004](ml004.md), and [ST001](st001.md).
 
 ## Python API and scope
 
@@ -13,7 +13,7 @@ notices, aggregate Findings and errors, and the selected-rule count.
 `render_html(report)` are pure formatters. None invokes parsers or rules. CLI
 `main(argv=None, *, registry=None)` accepts an explicit registry for trusted integrations and
 tests; the installed CLI uses a fresh default registry containing ML001, ML002,
-ML003, and ML004. An explicit registry is used exactly as supplied. `--disable-rule` can
+ML003, ML004, and ST001. An explicit registry is used exactly as supplied. `--disable-rule` can
 disable any built-in rule independently; unknown rule IDs are invocation errors. It never loads rules
 from submitted source or Notebook content.
 
