@@ -94,6 +94,15 @@ messages, explanations, suggestions, evidence, severity, or confidence stay
 separate. This matches the PRD primary sort keys and preserves exact distinct
 observations. No report schema or exit-code policy is implemented here.
 
+After each rule's complete output has passed validation and Notebook locations
+have been normalized, Analyzer applies a source-local `SuppressionIndex` once
+per parsed unit. It indexes only Python COMMENT tokens and exact `(line,
+rule_id)` pairs. Suppression therefore cannot turn a rule exception, invalid
+rule result, parse error, or Notebook notice into a clean result. Filtering
+precedes cross-rule deduplication and stable ordering. Rules and Reporters do
+not parse directives. Notebook units get independent indexes; no directive
+crosses a code-cell boundary. See [suppressions.md](suppressions.md).
+
 `AnalysisResult` includes `path`, `findings`, `errors`, `notices`,
 `analyzed_units`, and `completed_units`. A unit is analyzed once if it parses,
 even when no rules are enabled. It is completed when all selected rules finish

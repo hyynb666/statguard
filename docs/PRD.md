@@ -137,6 +137,13 @@ Examples below describe typical cases. Exact variable names are illustrative; im
 
 The following rules are candidates after v0.1 feedback and evidence-quality review. They are not implemented or counted in v0.1 acceptance: **ML007** test data used for model selection; **ML008** preprocessing fitted separately on train and test sets; **ST003** multiple pairwise tests after ANOVA without observed correction; **ST004** possible paired-test selection issue; **ST005** missing samples dropped immediately before inference; **ST006** incorrect interpretation of a p-value; **ST007** possible variable-scale issue in Pearson correlation. **ML009** is an additional implemented rule for potential preprocessing leakage before cross-validation (Milestone 3, Issue #17); it is outside v0.1 acceptance. Later delivery may also include a GitHub Action integration or IDE integration. Each requires its own feasibility review, evidence rules, limitations, and tests before becoming a release commitment.
 
+Post-v0.2 usability work adds explicit, rule-specific inline Finding
+suppression on a Python source line or the immediately following physical line.
+This is Analyzer output policy: it does not change rule semantics or statistical
+evidence, and must not hide parse/rule errors or Notebook notices. Notebook
+directives are local to one code cell. The original v0.1 acceptance criteria
+above remain historical and are not rewritten by later capabilities.
+
 ## 7. Architecture and implementation constraints
 
 Use Python 3.11+, `pyproject.toml`, and a `src/` layout. A proposed package boundary is:

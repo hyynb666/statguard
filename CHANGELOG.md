@@ -5,6 +5,12 @@ Changes to StatGuard are documented here. This project follows the spirit of
 
 ## [Unreleased]
 
+### Added
+
+- Explicit inline Finding suppression with rule-specific `statguard: ignore`
+  and `statguard: ignore-next-line` comments for Python files and Notebook code
+  cells.
+
 ## [0.2.0] - 2026-09-30
 
 ### Added

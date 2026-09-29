@@ -9,6 +9,11 @@ The eight v0.1 core rules are ML001–ML006 and ST001–ST002; ML009 is addition
 See the [Code of Conduct](CODE_OF_CONDUCT.md) and [Security Policy](SECURITY.md)
 when participating or reporting a vulnerability.
 
+Inline Finding suppression is Analyzer policy, not rule behavior: detection
+rules must not read or interpret `statguard: ignore` comments. Changes to the
+suppression syntax require false-positive, safety, and Notebook cell-boundary
+tests; consult [the suppression contract](docs/suppressions.md).
+
 Project-level CLI policy is intentionally limited to `[tool.statguard]`
 `exclude`, `disable-rules`, and `fail-on`; see
 [the configuration contract](docs/configuration.md) before changing it.

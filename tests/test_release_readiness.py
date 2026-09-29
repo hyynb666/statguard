@@ -34,7 +34,7 @@ def test_default_registry_contains_exactly_one_instance_of_each_release_rule():
 def test_release_version_and_alpha_classifier_are_consistent():
     metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
-    assert metadata["version"] == "0.2.0"
+    assert metadata["version"] == "0.3.0.dev0"
     assert metadata["requires-python"] == ">=3.11"
     assert metadata["dependencies"] == []
     assert metadata["license"] == "MIT"
@@ -46,6 +46,7 @@ def test_readme_describes_current_release_install_and_no_pypi_availability():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
     assert "StatGuard v0.2.0 is the current public Alpha release" in readme
+    assert "main` branch is the development line toward v0.3.0" in readme
     assert "--branch v0.2.0" in readme
     assert "releases/tag/v0.2.0" in readme
     assert "not published to PyPI" in readme
@@ -66,7 +67,8 @@ def test_changelog_freezes_v02_and_preserves_v01_history():
     unreleased = changelog.split("## [0.2.0]", maxsplit=1)[0]
 
     assert "## [Unreleased]\n\n" in unreleased
-    assert "### Added" not in unreleased
+    assert "### Added" in unreleased
+    assert "inline Finding suppression" in unreleased
     assert "## [0.2.0] - 2026-09-30\n\n### Added" in changelog
     assert "- Project policy from `[tool.statguard]`" in changelog
     assert "- GitHub composite Action integration" in changelog
