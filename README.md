@@ -1,9 +1,10 @@
 # StatGuard
 
-StatGuard v0.1.0 is the first public Alpha release of a conservative static
-analyzer for statistical validity, model evaluation, and reproducibility risks
-in Python scripts and Jupyter Notebooks. It parses source without importing or
-executing submitted code.
+StatGuard v0.1.0 is the first public Alpha release on GitHub of a conservative
+static analyzer for statistical validity, model evaluation, and reproducibility
+risks in Python scripts and Jupyter Notebooks. The current `main` branch is
+developing toward v0.2.0 (`0.2.0.dev0`). StatGuard parses source without
+importing or executing submitted code.
 
 ## Why StatGuard?
 
@@ -161,6 +162,34 @@ Exit codes:
 
 Warnings and informational findings do not fail by default. `--fail-on`
 explicitly sets a threshold. An undetermined notice does not trigger it.
+Disable ML001, ML002, ML003, ML004, ML005, ML006, ML009, ST001, or ST002
+independently with `--disable-rule RULE_ID`.
+
+## GitHub Action
+
+StatGuard can run as a GitHub Actions step from the current development branch:
+
+```yaml
+jobs:
+  statguard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: hyynb666/statguard@main
+        with:
+          path: .
+```
+
+To make warning findings fail the step, add `fail-on: warning`. To save an HTML
+report for a workflow to upload, use `format: html` and
+`output: statguard-report.html`, then add your own
+`actions/upload-artifact@v4` step. The Action does not upload artifacts.
+
+**During v0.2 development, `@main` is a moving development reference.** The
+v0.1.0 release does not contain this Action. The first stable tag containing
+the Action is planned to be v0.2.0; use that tag only after it is released.
+See [GitHub Action documentation](docs/github-action.md) for inputs, exclusions,
+report formats, and security details.
 
 ## APIs and architecture
 
@@ -218,7 +247,3 @@ PyPI; install from the tagged source or the GitHub Release wheel.
 ## License
 
 StatGuard is available under the [MIT License](LICENSE).
-
-Disable ML001, ML002, ML003, ML004, ML005, ML006, ML009, ST001, or ST002 independently with
-`--disable-rule RULE_ID`.
-Warning findings exit 0 by default; use `--fail-on warning` to exit 1.

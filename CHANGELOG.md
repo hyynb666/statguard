@@ -5,6 +5,11 @@ Changes to StatGuard are documented here. This project follows the spirit of
 
 ## [Unreleased]
 
+### Added
+
+- GitHub composite Action integration for configurable CI scans, report output,
+  failure thresholds, rule disabling, and path exclusions.
+
 ## [0.1.0] - 2026-09-29
 
 ### Added

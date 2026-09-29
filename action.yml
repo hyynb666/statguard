@@ -1,0 +1,59 @@
+name: StatGuard
+description: Conservative static analysis for statistical and ML workflow risks.
+author: StatGuard contributors
+
+inputs:
+  path:
+    description: File or directory to scan, relative to GITHUB_WORKSPACE.
+    required: false
+    default: .
+  python-version:
+    description: Python version used to install and run StatGuard.
+    required: false
+    default: "3.12"
+  format:
+    description: Report format (console, json, or html).
+    required: false
+    default: console
+  output:
+    description: Optional report output path, relative to GITHUB_WORKSPACE.
+    required: false
+    default: ""
+  fail-on:
+    description: Optional finding threshold that fails the step (warning or error).
+    required: false
+    default: ""
+  disable-rules:
+    description: Optional comma-separated rule IDs to disable.
+    required: false
+    default: ""
+  exclude:
+    description: Optional newline-separated paths to exclude from the scan.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ inputs['python-version'] }}
+    - name: Install StatGuard from this Action revision
+      shell: bash
+      env:
+        STATGUARD_ACTION_PATH: ${{ github.action_path }}
+      run: |
+        python -c "import os, subprocess, sys; result = subprocess.run([sys.executable, '-m', 'pip', 'install', '--no-deps', os.environ['STATGUARD_ACTION_PATH']], check=False, shell=False); raise SystemExit(result.returncode)"
+    - name: Run StatGuard
+      shell: bash
+      env:
+        STATGUARD_ACTION_PATH: ${{ github.action_path }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_OUTPUT: ${{ inputs.output }}
+        INPUT_FAIL_ON: ${{ inputs['fail-on'] }}
+        INPUT_DISABLE_RULES: ${{ inputs['disable-rules'] }}
+        INPUT_EXCLUDE: ${{ inputs.exclude }}
+      run: |
+        python -c "import os, runpy; runpy.run_path(os.path.join(os.environ['STATGUARD_ACTION_PATH'], 'scripts', 'run_github_action.py'), run_name='__main__')"
