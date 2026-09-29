@@ -23,6 +23,8 @@ def default_inputs(tmp_path: Path) -> dict[str, str]:
         "INPUT_FAIL_ON": "",
         "INPUT_DISABLE_RULES": "",
         "INPUT_EXCLUDE": "",
+        "INPUT_CONFIG": "",
+        "INPUT_NO_CONFIG": "false",
     }
 
 
@@ -57,6 +59,43 @@ def test_report_format_is_mapped(report_format: str) -> None:
 
 def test_empty_format_uses_console_default() -> None:
     assert build_cli_args({"INPUT_FORMAT": ""}) == ["check", ".", "--format", "console"]
+
+
+def test_config_and_no_config_arguments_are_mapped() -> None:
+    assert build_cli_args({"INPUT_CONFIG": "settings/statguard.toml"}) == [
+        "check",
+        ".",
+        "--format",
+        "console",
+        "--config",
+        "settings/statguard.toml",
+    ]
+    assert build_cli_args({"INPUT_NO_CONFIG": "true"})[-1] == "--no-config"
+    assert "--no-config" not in build_cli_args({"INPUT_NO_CONFIG": "false"})
+
+
+def test_shell_like_config_path_is_passed_as_literal_argument() -> None:
+    literal = "settings/policy; echo BAD.toml"
+    assert build_cli_args({"INPUT_CONFIG": literal})[-2:] == ["--config", literal]
+
+
+@pytest.mark.parametrize("value", ["True", "TRUE", "yes", "", "1"])
+def test_no_config_requires_exact_boolean(value: str) -> None:
+    with pytest.raises(ValueError, match="exactly true or false"):
+        build_cli_args({"INPUT_NO_CONFIG": value})
+
+
+def test_config_and_no_config_conflict_is_rejected() -> None:
+    with pytest.raises(ValueError, match="cannot be combined"):
+        build_cli_args({"INPUT_CONFIG": "policy.toml", "INPUT_NO_CONFIG": "true"})
+
+
+@pytest.mark.parametrize(
+    "path", ["../outside.toml", "folder/../../outside.toml", "C:\\outside.toml", "/etc/x"]
+)
+def test_config_path_must_be_workspace_relative(path: str) -> None:
+    with pytest.raises(ValueError, match="config must stay within GITHUB_WORKSPACE"):
+        build_cli_args({"INPUT_CONFIG": path})
 
 
 def test_optional_output_and_threshold_are_omitted_when_empty() -> None:
@@ -146,6 +185,52 @@ def test_child_exit_code_is_propagated(
     assert main(default_inputs) == child_status
 
 
+def test_action_runner_config_smoke_in_isolated_workspace(tmp_path: Path, capsys) -> None:
+    """Exercise automatic, explicit, and disabled config through the real CLI subprocess."""
+    import shutil
+
+    workspace = tmp_path / "caller"
+    workspace.mkdir()
+    shutil.copyfile(ROOT / "examples/ml_leakage_example.py", workspace / "risk.py")
+    (workspace / "pyproject.toml").write_text(
+        '[tool.statguard]\nfail-on="warning"\n', encoding="utf-8"
+    )
+    explicit = workspace / "policy.toml"
+    explicit.write_text(
+        '[tool.statguard]\nfail-on="warning"\ndisable-rules=["ML001"]\n', encoding="utf-8"
+    )
+    inputs = {
+        "GITHUB_WORKSPACE": str(workspace),
+        "INPUT_PATH": "risk.py",
+        "INPUT_FORMAT": "json",
+        "INPUT_CONFIG": "",
+        "INPUT_NO_CONFIG": "false",
+    }
+    assert main(inputs) == 1  # workspace pyproject.toml was discovered
+    capsys.readouterr()
+    inputs["INPUT_CONFIG"] = "policy.toml"
+    assert main(inputs) == 0  # explicit config overrides auto-discovery
+    capsys.readouterr()
+    inputs["INPUT_CONFIG"] = ""
+    inputs["INPUT_NO_CONFIG"] = "true"
+    assert main(inputs) == 0  # bypasses the workspace fail threshold
+    capsys.readouterr()
+
+
+def test_action_config_resolved_symlink_cannot_escape_workspace(
+    default_inputs: dict[str, str], tmp_path: Path
+) -> None:
+    outside = tmp_path.parent / f"{tmp_path.name}-outside.toml"
+    outside.write_text("[tool.statguard]\n", encoding="utf-8")
+    link = Path(default_inputs["GITHUB_WORKSPACE"]) / "outside.toml"
+    try:
+        link.symlink_to(outside)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlink creation is unavailable")
+    default_inputs["INPUT_CONFIG"] = "outside.toml"
+    assert main(default_inputs) == 2
+
+
 @pytest.mark.parametrize("path", ["../outside", "sub/../../outside", "C:\\outside"])
 def test_path_cannot_escape_workspace(path: str) -> None:
     with pytest.raises(ValueError, match="GITHUB_WORKSPACE"):
@@ -167,6 +252,8 @@ def test_action_metadata_uses_composite_action_and_local_package_source() -> Non
     assert "pip', 'install', '--no-deps', os.environ['STATGUARD_ACTION_PATH']" in action
     assert "check=False, shell=False" in action
     assert "pip install statguard" not in action
+    assert "INPUT_CONFIG: ${{ inputs.config }}" in action
+    assert "INPUT_NO_CONFIG: ${{ inputs['no-config'] }}" in action
 
 
 def test_action_smoke_workflow_covers_both_hosted_platforms() -> None:

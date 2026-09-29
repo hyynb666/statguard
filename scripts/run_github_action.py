@@ -12,11 +12,16 @@ from pathlib import Path, PureWindowsPath
 def build_cli_args(inputs: Mapping[str, str]) -> list[str]:
     """Translate Action environment inputs into CLI arguments without a shell."""
     path = inputs.get("INPUT_PATH", ".") or "."
-    native_path = Path(path)
-    windows_path = PureWindowsPath(path)
-    path_parts = path.replace("\\", "/").split("/")
-    if native_path.is_absolute() or windows_path.is_absolute() or ".." in path_parts:
-        raise ValueError("path must stay within GITHUB_WORKSPACE")
+    _validate_relative_workspace_path(path, "path")
+
+    config_path = inputs.get("INPUT_CONFIG", "")
+    no_config = inputs.get("INPUT_NO_CONFIG", "false")
+    if no_config not in {"true", "false"}:
+        raise ValueError("no-config must be exactly true or false")
+    if config_path and no_config == "true":
+        raise ValueError("config cannot be combined with no-config")
+    if config_path:
+        _validate_relative_workspace_path(config_path, "config")
 
     report_format = (inputs.get("INPUT_FORMAT", "console") or "console").strip()
     if report_format not in {"console", "json", "html"}:
@@ -27,6 +32,10 @@ def build_cli_args(inputs: Mapping[str, str]) -> list[str]:
         raise ValueError("fail-on must be empty, warning, or error")
 
     args = ["check", path, "--format", report_format]
+    if config_path:
+        args.extend(("--config", config_path))
+    if no_config == "true":
+        args.append("--no-config")
     output = inputs.get("INPUT_OUTPUT", "")
     if output:
         args.extend(("--output", output))
@@ -40,6 +49,19 @@ def build_cli_args(inputs: Mapping[str, str]) -> list[str]:
         if exclude_path.strip():
             args.extend(("--exclude", exclude_path))
     return args
+
+
+def _validate_relative_workspace_path(value: str, name: str) -> None:
+    native_path = Path(value)
+    windows_path = PureWindowsPath(value)
+    path_parts = value.replace("\\", "/").split("/")
+    if (
+        native_path.is_absolute()
+        or windows_path.is_absolute()
+        or value.startswith(("/", "\\"))
+        or ".." in path_parts
+    ):
+        raise ValueError(f"{name} must stay within GITHUB_WORKSPACE")
 
 
 def main(environ: Mapping[str, str] | None = None) -> int:
@@ -56,9 +78,11 @@ def main(environ: Mapping[str, str] | None = None) -> int:
 
     try:
         args = build_cli_args(inputs)
-        target = Path(args[1])
-        resolved_target = (workspace / target).resolve()
-        resolved_target.relative_to(workspace)
+        relative_paths = [args[1]]
+        if "--config" in args:
+            relative_paths.append(args[args.index("--config") + 1])
+        for value in relative_paths:
+            (workspace / value).resolve().relative_to(workspace)
     except (OSError, ValueError):
         print("statguard-action: invalid Action input path or options", file=sys.stderr)
         return 2

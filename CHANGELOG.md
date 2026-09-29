@@ -7,6 +7,8 @@ Changes to StatGuard are documented here. This project follows the spirit of
 
 ### Added
 
+- Project policy from `[tool.statguard]` in `pyproject.toml`, with explicit
+  config selection and a config-discovery opt-out in the CLI and GitHub Action.
 - GitHub composite Action integration for configurable CI scans, report output,
   failure thresholds, rule disabling, and path exclusions.
 

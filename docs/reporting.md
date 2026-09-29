@@ -12,7 +12,9 @@ notices, aggregate Findings and errors, and the selected-rule count.
 `statguard.reporters.render_console(report)`, `render_json(report)`, and
 `render_html(report)` are pure formatters. None invokes parsers or rules. CLI
 `main(argv=None, *, registry=None)` accepts an explicit registry for trusted integrations and
-tests; the installed CLI uses a fresh default registry containing ML001, ML002,
+tests; each CLI invocation snapshots its selected rules and enabled state, then
+applies invocation policy without mutating the caller's registry. The installed
+CLI uses a fresh default registry containing ML001, ML002,
 ML003, ML004, ML005, ML006, ML009, ST001, and ST002. An explicit registry is used exactly as supplied. `--disable-rule` can
 disable any built-in rule independently; unknown rule IDs are invocation errors. It never loads rules
 from submitted source or Notebook content.
@@ -74,10 +76,10 @@ directories, and refuses to replace a scanned input. A write failure returns 2
 and writes a short message to stderr. Without `--output`, HTML is written as a
 complete document to stdout, with no status messages mixed into it.
 
-Exit 2 takes precedence if any input, parse, rule, or output error occurs.
-Otherwise `--fail-on warning` exits 1 for warning/error Findings, and
-`--fail-on error` exits 1 for error Findings. Without a threshold, a
-completed scan exits 0 even if Findings exist. An undetermined evidence
-category never meets the threshold. This is the authoritative v0.1 policy and
-is shared by the CLI, README, and PRD. No complete configuration system or
-severity suppression is implemented.
+Exit 2 takes precedence if any input, parse, rule, configuration, or output
+error occurs. Otherwise an effective `warning` threshold exits 1 for
+warning/error Findings, and `error` exits 1 for error Findings. The threshold
+comes from an explicit `--fail-on` first, then `[tool.statguard].fail-on`, or
+is absent by default. An undetermined evidence category never meets the
+threshold. Configuration policy and precedence are documented in
+[configuration.md](configuration.md); severity suppression is not implemented.

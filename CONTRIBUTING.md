@@ -9,6 +9,10 @@ The eight v0.1 core rules are ML001–ML006 and ST001–ST002; ML009 is addition
 See the [Code of Conduct](CODE_OF_CONDUCT.md) and [Security Policy](SECURITY.md)
 when participating or reporting a vulnerability.
 
+Project-level CLI policy is intentionally limited to `[tool.statguard]`
+`exclude`, `disable-rules`, and `fail-on`; see
+[the configuration contract](docs/configuration.md) before changing it.
+
 ## Set up and validate
 
 Use Python 3.11+ and a virtual environment as described in the README, then run:
