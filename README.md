@@ -5,6 +5,13 @@ evaluation, and reproducibility risks in Python scripts and Jupyter Notebooks.
 It parses source without importing or executing submitted code. Version
 `0.1.0.dev0` is a development version.
 
+## Why StatGuard?
+
+StatGuard is a conservative static analyzer for statistical and machine-learning
+workflow risks. It focuses on documented source patterns and traceable data
+lineage; it is not a general-purpose Python linter or a validator of statistical
+correctness. Findings are review prompts, not proof that an analysis is wrong.
+
 ## Current capabilities and limits
 
 The CLI scans individual `.py` and `.ipynb` files or directories recursively,
@@ -35,6 +42,55 @@ ML009 remains the separate cross-validation preprocessing rule; ML005 retains
 its PRD meaning of training-only evaluation.
 A clean scan does not establish statistical correctness. No cross-cell data flow, directory
 configuration file, or Notebook execution history analysis is implemented.
+
+## Rule matrix
+
+The v0.1 core comprises eight rules. ML009 is an additional rule and is not
+included in that count.
+
+| Rule ID | Name | Severity | Confidence | Primary API family | Status |
+| --- | --- | --- | --- | --- | --- |
+| ML001 | Pre-split scaler fit | warning | medium | `sklearn.preprocessing` | v0.1 core |
+| ML002 | Pre-split imputer fit | warning | medium | `sklearn.impute` | v0.1 core |
+| ML003 | Pre-split feature selection | warning | medium | `sklearn.feature_selection` | v0.1 core |
+| ML004 | Fit on an explicit test set | warning | medium | sklearn estimators and `train_test_split` | v0.1 core |
+| ML005 | Training-only evaluation | warning | medium | sklearn estimator `.score()` | v0.1 core |
+| ML006 | Random split without a fixed seed | info | high | `train_test_split` | v0.1 core |
+| ST001 | Repeated tests without observed correction | warning | medium | resolved `scipy.stats` tests | v0.1 core |
+| ST002 | Discarded statistical test result | info | high | resolved `scipy.stats` tests | v0.1 core |
+| ML009 | Preprocessing leakage before cross-validation | warning | medium | sklearn preprocessing and CV APIs | additional rule |
+
+See [rule documentation](docs/) for supported patterns, evidence categories,
+and limitations.
+
+## Example diagnostic
+
+The CLI scans the small [ML leakage example](examples/ml_leakage_example.py)
+without executing it. The actual output is:
+
+```text
+examples\ml_leakage_example.py:8:14: ML001 warning: Potential preprocessing leakage before train/test split. [potential statistical risk]
+  Risk: A known sklearn scaler's fitted transformation output flows into train_test_split at examples\ml_leakage_example.py:9:12, after fitting in the same scope. Information from the eventual test subset may influence preprocessing parameters. This static pattern does not establish actual leakage or measured model performance.
+  Fix: Split the data before fitting the transformer. Fit preprocessing on the training subset and apply it to validation/test data, or use an appropriately configured sklearn Pipeline in the training workflow.
+Scanned 1 files; findings: error 0, warning 1, info 0; files: complete 1, partial 0, failed 0; scan errors: parse 0, rule 0.
+```
+
+The path separator in this captured Windows output may differ on other systems.
+
+The [statistics example](examples/statistics_example.py) demonstrates a
+repeated-test prompt; [safe_workflow.py](examples/safe_workflow.py) demonstrates
+a train-only preprocessing flow. To save a filterable report:
+
+```text
+statguard check examples/ml_leakage_example.py --format html --output report.html
+```
+
+## Notebook scope
+
+StatGuard parses Notebook Python code cells independently. It does not execute
+cells or analyze stored outputs. Document order does not establish historical
+kernel execution order, and cross-cell data flow is not modeled. A clean scan
+does not establish that a Notebook or analysis is statistically correct.
 
 ## Install from this repository
 
@@ -101,11 +157,8 @@ Exit codes:
 | 1 | Scan completed with a Finding at or above `--fail-on warning` or `--fail-on error`. |
 | 2 | Invalid invocation, input/parse/rule error, or report write failure. |
 
-Warnings do not fail by default. `--fail-on` sets a threshold explicitly.
-This Issue #6 behavior follows the current task requirement and differs from
-the initial PRD Section 3.3 default of exiting 1 for any Finding; review the
-default policy before v0.1 release. An undetermined evidence category does not
-trigger the threshold.
+Warnings and informational findings do not fail by default. `--fail-on`
+explicitly sets a threshold. An undetermined notice does not trigger it.
 
 ## APIs and architecture
 
@@ -154,6 +207,11 @@ python -m build
 CI tests an installed package and builds an isolated wheel. See
 [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md); [docs/PRD.md](docs/PRD.md)
 defines the product scope and rule acceptance criteria.
+
+See also the [Code of Conduct](CODE_OF_CONDUCT.md), [Security Policy](SECURITY.md),
+[v0.1 release audit](docs/release-audit-v0.1.md), and
+[release checklist](docs/release-checklist.md). StatGuard is not currently
+published to PyPI; install from this repository or a locally built wheel.
 
 ## License
 

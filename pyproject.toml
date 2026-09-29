@@ -33,6 +33,8 @@ statguard = "statguard.cli:main"
 [project.urls]
 Repository = "https://github.com/hyynb666/statguard"
 Issues = "https://github.com/hyynb666/statguard/issues"
+Documentation = "https://github.com/hyynb666/statguard/tree/main/docs"
+Changelog = "https://github.com/hyynb666/statguard/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

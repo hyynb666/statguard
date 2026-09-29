@@ -5,6 +5,9 @@ The foundation includes packaging, CLI scanning, Console/JSON reporting, public
 interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
 ML001–ML006, ML009, ST001 and ST002 are documented in `docs/`. New rule work should follow the evidence,
 abstention, testing, and documentation conventions already established there.
+The eight v0.1 core rules are ML001–ML006 and ST001–ST002; ML009 is additional.
+See the [Code of Conduct](CODE_OF_CONDUCT.md) and [Security Policy](SECURITY.md)
+when participating or reporting a vulnerability.
 
 ## Set up and validate
 
@@ -24,6 +27,16 @@ Use `python -m ruff format .` to apply formatting before the checks. Tests must
 exercise the installed package; do not add the source directory to `PYTHONPATH`
 or pytest's import path to hide packaging errors. CI repeats tests and lint on
 Windows and Linux with Python 3.11–3.14 and checks a built wheel independently.
+
+## Pull requests
+
+Open a pull request against `main` and use the repository pull request template.
+Link the related issue, describe behavior and evidence changes, and include
+positive, negative, and boundary tests. Rule changes must explain statistical
+rationale, false-positive boundaries, and abstention behavior. Do not execute
+submitted Python or Notebook code during tests or analysis. Wait for CI and
+review before merging; do not publish packages or create releases as part of an
+ordinary implementation pull request.
 
 ## Design and test expectations
 

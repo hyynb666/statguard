@@ -78,7 +78,6 @@ Exit 2 takes precedence if any input, parse, rule, or output error occurs.
 Otherwise `--fail-on warning` exits 1 for warning/error Findings, and
 `--fail-on error` exits 1 for error Findings. Without a threshold, a
 completed scan exits 0 even if Findings exist. An undetermined evidence
-category never meets the threshold. This default is an explicit Issue #6
-change from the initial PRD Section 3.3 statement that any Finding exits 1;
-it requires product review before v0.1 release. No complete configuration
-system or severity suppression is implemented.
+category never meets the threshold. This is the authoritative v0.1 policy and
+is shared by the CLI, README, and PRD. No complete configuration system or
+severity suppression is implemented.

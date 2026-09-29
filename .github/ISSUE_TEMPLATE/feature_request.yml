@@ -1,0 +1,50 @@
+name: Feature request
+description: Propose a narrowly scoped analysis capability or integration.
+title: "Feature: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Do not include secrets, credentials, proprietary source, or private
+        datasets. New detection rules need explicit evidence criteria and a
+        review of false-positive risk.
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: What workflow or user need is not covered today?
+    validations:
+      required: true
+  - type: input
+    id: proposal
+    attributes:
+      label: Proposed rule or integration
+      placeholder: Include a suggested Rule ID only if one is known.
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Statistical or technical rationale
+      description: Explain the evidence that can be established from source.
+    validations:
+      required: true
+  - type: textarea
+    id: false-positives
+    attributes:
+      label: False-positive and abstention considerations
+      description: Include cases that should not produce a finding.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Minimal sample code
+      description: Use synthetic examples; do not include private data.
+      render: python
+  - type: textarea
+    id: finding
+    attributes:
+      label: Expected Finding behavior
+      description: Suggested evidence, location, severity, explanation, and action.

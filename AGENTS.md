@@ -22,7 +22,7 @@ These instructions apply to the StatGuard repository. `docs/PRD.md` is the produ
 
 - Use Python 3.11+, `pyproject.toml`, and a `src/statguard/` package layout. Keep Parser, Analysis Context, Finding, Rule Registry, Rule Engine, and Reporters separate as described in PRD Sections 3 and 7.
 - Parser owns AST units and locations. Analysis Context owns conservative import/call resolution, assignments, aliases, ordering, and lineage. Rules consume context and emit Findings through the registry and engine; rules do not print. Text and JSON reporters render the same Finding model.
-- Keep the public `statguard check <path>` interface and `--format json` behavior aligned with the PRD. Exit status is `0` for a completed scan without findings, `1` for a completed scan with findings, and `2` for invalid invocation or any scan error. An undetermined notice alone is not a finding.
+- Keep the public `statguard check <path>` interface and `--format json` behavior aligned with the PRD. Exit status is `0` when a completed scan does not meet an explicitly configured `--fail-on` threshold (Findings do not fail by default), `1` when a Finding meets the configured warning/error threshold, and `2` for invalid invocation or any input, parse, rule, or report error. An undetermined notice alone is not a finding.
 - Findings must be deduplicated and sorted by path, cell, line, column, and rule ID. JSON includes a documented schema version, scanned-file summary, findings, and scan errors/notices. Review and document compatibility impact before changing rule IDs, JSON schema, or exit behavior.
 - Minimize dependencies and keep supported library-call patterns explicit in rule documentation. Unsupported or dynamically resolved APIs are limitations, not evidence of safety.
 
