@@ -1,0 +1,82 @@
+name: Bug report
+description: Report a reproducible defect in StatGuard.
+title: "Bug: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Do not include credentials, secrets, proprietary source, or private
+        datasets. Redact paths and data where needed. For security-sensitive
+        issues, use the private reporting route in SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: StatGuard version or commit
+      placeholder: 0.1.0.dev0 or a commit SHA
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: 3.12.4
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11, Ubuntu 24.04, macOS version
+    validations:
+      required: true
+  - type: dropdown
+    id: input-type
+    attributes:
+      label: Input type
+      options:
+        - Python source (.py)
+        - Jupyter Notebook (.ipynb)
+        - Directory scan
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: rule-id
+    attributes:
+      label: Rule ID, if relevant
+      placeholder: ML001, ST001, or not applicable
+  - type: textarea
+    id: command
+    attributes:
+      label: Command used
+      description: Include relevant options and redact sensitive paths.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Minimal source example
+      description: Remove secrets, credentials, proprietary logic, and real data.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Console or JSON output
+      description: Redact private paths and any sensitive content.
+      render: text

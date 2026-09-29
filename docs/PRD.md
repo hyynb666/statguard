@@ -40,6 +40,10 @@ statguard check ./project
 statguard check ./project --format json
 ```
 
+These commands describe the target interface. StatGuard is not currently
+published to PyPI; install from the repository or a built wheel until a
+separately authorized publication is completed.
+
 ## 3. Scope and functional requirements
 
 ### 3.1 Input and parsing
@@ -58,9 +62,9 @@ statguard check ./project --format json
 
 ### 3.3 CLI and reporting
 
-- Provide `statguard check <path>` with default text output and `--format json`. Text output must make the location, rule ID, evidence category, risk, and fix discoverable without reading source code.
+- Provide `statguard check <path>` with default Console output and `--format json` or `--format html`; `--output` may save a report. Console output must make the location, rule ID, evidence category, risk, and fix discoverable without reading source code.
 - JSON output must be valid standalone JSON on stdout and expose a documented schema version, scanned-file summary, findings, and scan errors/notices. Diagnostics or progress must not corrupt JSON stdout.
-- Exit with `0` when a scan completes without findings, `1` when it completes with findings, and `2` for invalid invocation or any scan error. Document this behavior for CI users. An undetermined notice alone does not count as a finding.
+- Exit with `0` when a completed scan does not meet an explicitly configured failure threshold, `1` when at least one Finding meets `--fail-on warning` or `--fail-on error`, and `2` for invalid invocation or any input, parse, rule, or report error. Without `--fail-on`, Findings do not change the exit status. An undetermined notice alone is not a Finding and does not change the status. This is the v0.1 CLI contract for CI users.
 
 ## 4. Statistical correctness policy
 
@@ -129,7 +133,7 @@ Examples below describe typical cases. Exact variable names are illustrative; im
 
 ## 6. Later-version candidates
 
-The following rules are candidates after v0.1 feedback and evidence-quality review. Their IDs are reserved here but they are not implemented or counted in v0.1 acceptance: **ML007** test data used for model selection; **ML008** preprocessing fitted separately on train and test sets; **ST003** multiple pairwise tests after ANOVA without observed correction; **ST004** possible paired-test selection issue; **ST005** missing samples dropped immediately before inference; **ST006** incorrect interpretation of a p-value; **ST007** possible variable-scale issue in Pearson correlation. **ML009** is assigned to potential preprocessing leakage before cross-validation (Milestone 3, Issue #17) and is outside v0.1 acceptance. Later delivery may also include a GitHub Action integration, HTML report, or IDE integration. Each requires its own feasibility review, evidence rules, limitations, and tests before becoming a release commitment.
+The following rules are candidates after v0.1 feedback and evidence-quality review. They are not implemented or counted in v0.1 acceptance: **ML007** test data used for model selection; **ML008** preprocessing fitted separately on train and test sets; **ST003** multiple pairwise tests after ANOVA without observed correction; **ST004** possible paired-test selection issue; **ST005** missing samples dropped immediately before inference; **ST006** incorrect interpretation of a p-value; **ST007** possible variable-scale issue in Pearson correlation. **ML009** is an additional implemented rule for potential preprocessing leakage before cross-validation (Milestone 3, Issue #17); it is outside v0.1 acceptance. Later delivery may also include a GitHub Action integration or IDE integration. Each requires its own feasibility review, evidence rules, limitations, and tests before becoming a release commitment.
 
 ## 7. Architecture and implementation constraints
 
@@ -169,11 +173,11 @@ Dependencies should be limited to what parsing, CLI, and reporting require. The 
 - Every v0.1 rule has at least one positive, one negative, and one boundary fixture, plus a written known-limitation note. ML001–ML003 additionally prove shared lineage and fit-before-split order. ML005 and ST001 verify that bounded absence claims are worded as risks.
 - Integration tests scan a `.py` file, an `.ipynb` file, and a directory; verify locations, deterministic ordering, text/JSON parity, JSON parseability, exit codes, and graceful parse errors.
 - A safety test uses a source file or notebook cell with a side effect and verifies scanning does not execute it. Regression tests cover every confirmed false positive or false negative fixed before release.
-- v0.1 is acceptable when all eight rules meet their stated cases, CLI and JSON meet Section 3, tests and Ruff pass in CI, and installation via the documented `pip install statguard` path works from the published package. Public release also requires the items in Section 10.
+- v0.1 is acceptable when all eight rules meet their stated cases, CLI and JSON meet Section 3, tests and Ruff pass in CI, and a built wheel installs and passes its CLI smoke test. For a separately authorized PyPI publication, verify `pip install statguard` against the published package before announcing availability. Public release also requires the items in Section 10.
 
 ## 10. GitHub open-source release requirements
 
-Before publishing, provide a README with installation, CLI examples, sample diagnostics, supported patterns, limitations, and a clear statement that source is not executed. Choose and include an open-source license, `CONTRIBUTING.md`, a code of conduct, issue and pull request templates, and a security reporting path. Document rule IDs, evidence categories, JSON schema, exit codes, and notebook-order limitations. Configure `pyproject.toml` package metadata and console entry point, publish a versioned release and changelog, and ensure GitHub Actions validates the release commit. Package publication and any PyPI credentials are separate release operations; this PRD does not authorize them.
+Before a public release, provide a README with installation, CLI examples, sample diagnostics, supported patterns, limitations, and a clear statement that source is not executed. Include an open-source license, `CONTRIBUTING.md`, a code of conduct, issue and pull request templates, and a security reporting path. Document rule IDs, evidence categories, JSON schema, exit codes, and Notebook-order limitations. Configure `pyproject.toml` package metadata and the console entry point, prepare a changelog and release checklist, and ensure GitHub Actions validates the release commit. Version tagging, GitHub Release creation, package publication, and any PyPI credentials are separate release operations; this PRD does not authorize them.
 
 ## 11. Development roadmap and GitHub issue plan
 
@@ -193,7 +197,7 @@ Each row below is intended as a separate GitHub Issue with a reviewable delivera
 | M4 — release | Complete CLI and JSON Reporter | Documented schema, deterministic output, notebook locations, and exit codes pass integration tests. |
 | M4 — release | Expand regression suite and CI | Pytest and Ruff pass on supported Python versions in GitHub Actions. |
 | M4 — release | Complete user and contributor docs plus package metadata | README, rule docs, limitations, license, contribution/security guidance, and installable package are reviewed. |
-| M4 — release | Prepare v0.1 public release | Changelog, tagged version, package installation smoke test, and release checklist are complete. |
+| M4 — release | Prepare v0.1 public release | Changelog, release checklist, package metadata review, and built-wheel installation smoke are complete; version tagging and publication are handled by a separately authorized release task. |
 | M5 — feedback-driven | Triage user reports and prioritize candidate rules/integrations | Each proposed addition has evidence criteria, false-positive review, scoped issue, and acceptance tests before implementation. |
 
 Milestones 1–4 define the first release. Milestone 5 begins only after user feedback and separate prioritization.
