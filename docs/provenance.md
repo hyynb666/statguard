@@ -131,7 +131,9 @@ also exposes its parser-owned `parsed` unit to reject mismatched tracker inputs.
 Parser, Analyzer, Finding, Rule, CLI and Reporter behavior is unchanged. The
 provenance layer itself emits no diagnostics. [ML001](ml001.md),
 [ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), and [ML009](ml009.md)
-consume these facts without changing the JSON report schema. ML009 follows
+consume these facts without changing the JSON report schema. ML006 does not
+depend on data roles or split-output provenance; it inspects the resolved split
+call and its statically known keyword values. ML009 follows
 direct fitted-transform outputs through known aliases to an exact sklearn CV
 call's `X` argument; it does not add another provenance graph.
 

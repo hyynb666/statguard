@@ -36,7 +36,9 @@ def source_for(rule: str, constructor: str, options: str = "", fit_args: str = "
 
 
 def findings(source: str, path: str = "analysis.py"):
-    result = Analyzer(default_registry()).analyze_source(source, path=path)
+    registry = default_registry()
+    registry.disable("ML006")
+    result = Analyzer(registry).analyze_source(source, path=path)
     assert not result.errors
     return result.findings
 
@@ -266,7 +268,9 @@ def test_notebook_same_cell_location_and_cross_cell_abstention():
             "outputs": [{"output_type": "stream", "text": "ignored"}],
         }
     ]
-    result = Analyzer(default_registry()).analyze_notebook_json(
+    registry = default_registry()
+    registry.disable("ML006")
+    result = Analyzer(registry).analyze_notebook_json(
         json.dumps(
             {
                 "nbformat": 4,
@@ -329,7 +333,15 @@ def test_cli_console_json_disable_and_exit_threshold(
 ):
     path = tmp_path / "separate.py"
     path.write_text(source_for(rule, constructor, options, fit_args), encoding="utf-8")
-    command = [sys.executable, "-m", "statguard", "check", str(path)]
+    command = [
+        sys.executable,
+        "-m",
+        "statguard",
+        "check",
+        str(path),
+        "--disable-rule",
+        "ML006",
+    ]
     console = subprocess.run(command, capture_output=True, text=True, check=False)
     assert console.returncode == 0
     assert f"{rule} warning" in console.stdout

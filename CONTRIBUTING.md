@@ -3,7 +3,7 @@
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The foundation includes packaging, CLI scanning, Console/JSON reporting, public
 interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
-ML001–ML005, ML009 and ST001 are documented in `docs/`. New rule work should follow the evidence,
+ML001–ML006, ML009 and ST001 are documented in `docs/`. New rule work should follow the evidence,
 abstention, testing, and documentation conventions already established there.
 
 ## Set up and validate
@@ -162,6 +162,15 @@ the candidate. Training score is useful in many workflows and is not itself an
 error. Do not infer absence outside the analyzed scope or count a different
 model, split, Notebook cell, metric helper, or cross-validation clone as a
 matching held-out score.
+
+## ML006 changes
+
+Follow the [ML006 contract](docs/ml006.md). Require a resolved sklearn
+`train_test_split` call. Report only when shuffling is explicitly or by default
+enabled and `random_state` is omitted or statically `None`; known integer seeds
+and `shuffle=False` are safe for this rule. Unknown keyword expansions or
+dynamic settings must abstain. This is an informational reproducibility prompt,
+not a correctness error.
 
 ## ML009 changes
 

@@ -303,6 +303,7 @@ def test_default_registry_and_rule_disabling_are_independent():
         "ML003",
         "ML004",
         "ML005",
+        "ML006",
         "ML009",
         "ST001",
     ]
@@ -324,9 +325,11 @@ def test_default_registry_and_rule_disabling_are_independent():
     )
     registry = default_registry()
     registry.disable("ML001")
+    registry.disable("ML006")
     assert [f.rule_id for f in Analyzer(registry).analyze_source(both).findings] == ["ML002"]
     registry = default_registry()
     registry.disable("ML002")
+    registry.disable("ML006")
     assert [f.rule_id for f in Analyzer(registry).analyze_source(both).findings] == ["ML001"]
 
 
@@ -343,7 +346,18 @@ def test_real_cli_json_report_and_thresholds(tmp_path, args, returncode, count):
     path = tmp_path / "risk.py"
     path.write_text(risk(), encoding="utf-8")
     result = subprocess.run(
-        [sys.executable, "-m", "statguard", "check", str(path), "--format", "json", *args],
+        [
+            sys.executable,
+            "-m",
+            "statguard",
+            "check",
+            str(path),
+            "--format",
+            "json",
+            "--disable-rule",
+            "ML006",
+            *args,
+        ],
         capture_output=True,
         text=True,
         check=False,
