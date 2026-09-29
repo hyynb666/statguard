@@ -78,13 +78,21 @@ and writes a short message to stderr. Without `--output`, JSON and SARIF stdout
 contain only their serialized document; HTML is a complete document without
 status text.
 
+Valid inline Finding suppressions are applied by Analyzer after rule result
+validation and Notebook location normalization, before deduplication and
+sorting. Reporters receive only the visible Finding set; summary counts and
+failure thresholds use that same set. Suppressions do not hide parser/rule
+errors or Notebook notices. JSON schema 1.0 and SARIF 2.1.0 are unchanged.
+See [inline suppression](suppressions.md) for token and line semantics.
+
 Exit 2 takes precedence if any input, parse, rule, configuration, or output
 error occurs. Otherwise an effective `warning` threshold exits 1 for
 warning/error Findings, and `error` exits 1 for error Findings. The threshold
 comes from an explicit `--fail-on` first, then `[tool.statguard].fail-on`, or
 is absent by default. An undetermined evidence category never meets the
 threshold. Configuration policy and precedence are documented in
-[configuration.md](configuration.md); severity suppression is not implemented.
+[configuration.md](configuration.md); severity-based or configuration-driven
+suppression is not implemented.
 
 ## SARIF 2.1.0
 

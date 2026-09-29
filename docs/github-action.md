@@ -4,6 +4,9 @@ StatGuard v0.2.0 contains the first stable tagged Composite Action. Use the
 version tag for reproducible workflows. `hyynb666/statguard@main` continues to
 track development and may change after development resumes.
 
+Inline Finding suppression is available on the development `main` branch only
+until a later release; it is not included in the stable v0.2.0 Action tag.
+
 ## Basic use
 
 ```yaml

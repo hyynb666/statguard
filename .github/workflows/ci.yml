@@ -103,6 +103,12 @@ jobs:
           fail-on: warning
           disable-rules: ML001
 
+      - name: Suppress one warning with an inline directive
+        uses: ./
+        with:
+          path: tests/fixtures/action_suppression.py
+          fail-on: warning
+
       - name: Write a JSON report
         uses: ./
         with:

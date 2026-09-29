@@ -5,6 +5,10 @@ static analyzer for statistical validity, model evaluation, and reproducibility
 risks in Python scripts and Jupyter Notebooks. StatGuard parses source without
 importing or executing submitted code.
 
+The `main` branch is the development line toward v0.3.0; its package version is
+`0.3.0.dev0`. Inline Finding suppression is available on development `main`
+only and is not included in the v0.2.0 release.
+
 ## Why StatGuard?
 
 StatGuard is a conservative static analyzer for statistical and machine-learning
@@ -167,6 +171,28 @@ Parser errors, unsupported Notebook cells, and rule errors are distinct from
 Findings. See [reporting](docs/reporting.md) and the
 [HTML report guide](docs/html-report.md). Scanning continues through other
 files and valid Notebook cells.
+
+### Inline Finding suppression (development main)
+
+Use an explicit rule ID to suppress one Finding on the comment's physical line:
+
+```python
+scaled = scaler.fit_transform(X)  # statguard: ignore ML001
+```
+
+Or suppress only the immediately following physical line:
+
+```python
+# statguard: ignore-next-line ML001, ML002
+scaled = imputer.fit_transform(X)
+```
+
+Directives are parsed from Python comment tokens. They do not affect detection,
+and do not support wildcard, file-wide, or block suppression. Malformed or
+unknown IDs are no-ops. Notebook directives apply only within the same code
+cell. All reporters, summaries, and `--fail-on` use the filtered Finding set;
+parse/rule errors and notices remain visible. This capability is not part of
+the stable v0.2.0 tag; see [inline suppression details](docs/suppressions.md).
 
 Exit codes:
 

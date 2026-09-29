@@ -19,6 +19,7 @@ from statguard.parsers import (
     PythonSourceParser,
     SourceParseError,
 )
+from statguard.suppressions import SuppressionIndex
 
 
 class AnalysisErrorStage(StrEnum):
@@ -197,10 +198,15 @@ class Analyzer:
         completed = 0
         for context in contexts:
             unit_failed = False
+            suppressions = SuppressionIndex.from_source(context.source)
             for rule in selected:
                 produced, error = self._run_rule(rule, context)
                 if error is None:
-                    findings.update(produced)
+                    findings.update(
+                        item
+                        for item in produced
+                        if not suppressions.suppresses(line=item.line, rule_id=item.rule_id)
+                    )
                 else:
                     errors.append(error)
                     unit_failed = True
