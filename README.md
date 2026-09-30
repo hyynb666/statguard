@@ -5,9 +5,10 @@ static analyzer for statistical validity, model evaluation, and reproducibility
 risks in Python scripts and Jupyter Notebooks. StatGuard parses source without
 importing or executing submitted code.
 
-The `main` branch is the development line toward v0.3.0; its package version is
-`0.3.0.dev0`. Inline Finding suppression is available on development `main`
-only and is not included in the v0.2.0 release.
+The `main` branch remains the development line at package version
+`0.3.0.dev0`. The next planned public release is v1.0.0, subject to the v1
+release audit; v1.0.0 has not been released. Inline Finding suppression is
+available on development `main` only and is not included in the v0.2.0 release.
 
 ## Why StatGuard?
 
@@ -56,19 +57,26 @@ expression or assigned to `_`; it does not imply a bug. See
 [ML004](docs/ml004.md), [ML005](docs/ml005.md), [ML006](docs/ml006.md),
 [ML007](docs/ml007.md), [ML008](docs/ml008.md), [ML009](docs/ml009.md), [ST001](docs/st001.md), and [ST002](docs/st002.md) for
 evidence requirements and limitations.
-All eight v0.1 rules in PRD Section 5 are implemented; ML008 and ML009 are additional later rules.
+All eight v0.1 core rules in PRD Section 5 are implemented. ML009 is an
+additional rule outside that core; ML007 and ML008 are post-v0.2 development
+rules.
 ML009 reports supported fitted preprocessing output passed as `X` to a later
 `cross_val_score` or `cross_validate` call. It reuses component semantics and
 same-scope provenance from ML001–ML003; it does not inspect Pipeline internals.
 ML009 remains the separate cross-validation preprocessing rule; ML005 retains
-its PRD meaning of training-only evaluation.
+its PRD meaning of training-only evaluation. The planned v1.0.0 release is
+intended to include the currently audited 11-rule development set, subject to
+the release audit; the stable v0.2.0 release continues to exclude ML007 and
+ML008.
 A clean scan does not establish statistical correctness. No cross-cell data flow
 or Notebook execution history analysis is implemented.
 
 ## Rule matrix
 
-The v0.1 core comprises eight rules. ML008 and ML009 are additional rules and are not
-included in that count.
+This development matrix lists 11 rules: nine ML rules and two ST rules. The
+v0.1 core comprises eight rules (ML001–ML006 and ST001–ST002); ML009 is an
+additional rule outside that core. ML007 and ML008 are post-v0.2 development
+rules, so neither is included in the stable v0.2.0 release.
 
 | Rule ID | Name | Severity | Confidence | Primary API family | Status |
 | --- | --- | --- | --- | --- | --- |
@@ -80,9 +88,9 @@ included in that count.
 | ML006 | Random split without a fixed seed | info | high | `train_test_split` | v0.1 core |
 | ML007 | Test data used for model selection | warning | medium | sklearn `GridSearchCV` / `RandomizedSearchCV` | post-v0.2 development |
 | ML008 | Preprocessing fitted separately on train and test | warning | medium | sklearn preprocessing | post-v0.2 development |
+| ML009 | Preprocessing leakage before cross-validation | warning | medium | sklearn preprocessing and CV APIs | additional rule |
 | ST001 | Repeated tests without observed correction | warning | medium | resolved `scipy.stats` tests | v0.1 core |
 | ST002 | Discarded statistical test result | info | high | resolved `scipy.stats` tests | v0.1 core |
-| ML009 | Preprocessing leakage before cross-validation | warning | medium | sklearn preprocessing and CV APIs | additional rule |
 
 See [rule documentation](docs/) for supported patterns, evidence categories,
 and limitations.
@@ -308,8 +316,10 @@ performance guarantee. See [benchmark methodology](docs/performance.md).
 See also the [Code of Conduct](CODE_OF_CONDUCT.md), [Security Policy](SECURITY.md),
 [v0.1 release audit](docs/release-audit-v0.1.md),
 [v0.2 release audit](docs/release-audit-v0.2.md), and
-[v0.2 release checklist](docs/release-checklist-v0.2.md). StatGuard is not published to
-PyPI; install from the tagged source or the GitHub Release wheel.
+[v0.2 release checklist](docs/release-checklist-v0.2.md), the [v1.0 release
+audit](docs/release-audit-v1.0.md), and the [v1.0 compatibility policy](docs/compatibility.md).
+StatGuard is not published to PyPI; install from the tagged source or the
+GitHub Release wheel.
 
 ## License
 

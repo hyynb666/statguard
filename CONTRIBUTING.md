@@ -168,7 +168,11 @@ of a normal development push. Contributions are distributed under the project's
 The v0.1.0 audit and checklist are historical records. For v0.2.0, use the
 [v0.2 release audit](docs/release-audit-v0.2.md) and
 [v0.2 release checklist](docs/release-checklist-v0.2.md). Release operations
-must follow their version, artifact, and no-PyPI boundaries.
+must follow their version, artifact, and no-PyPI boundaries. The planned v1
+compatibility boundary and audit are in [compatibility.md](docs/compatibility.md),
+[release-audit-v1.0.md](docs/release-audit-v1.0.md), and
+[release-checklist-v1.0.md](docs/release-checklist-v1.0.md); their draft status
+does not authorize version, tag, Release, or package-publication changes.
 
 ## Provenance contributions
 
