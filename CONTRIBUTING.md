@@ -3,7 +3,7 @@
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The foundation includes packaging, CLI scanning, Console/JSON reporting, public
 interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
-ML001–ML006, ML009, ST001 and ST002 are documented in `docs/`. New rule work should follow the evidence,
+ML001–ML007, ML009, ST001 and ST002 are documented in `docs/`. New rule work should follow the evidence,
 abstention, testing, and documentation conventions already established there.
 The eight v0.1 core rules are ML001–ML006 and ST001–ST002; ML009 is additional.
 See the [Code of Conduct](CODE_OF_CONDUCT.md) and [Security Policy](SECURITY.md)
@@ -13,6 +13,12 @@ Inline Finding suppression is Analyzer policy, not rule behavior: detection
 rules must not read or interpret `statguard: ignore` comments. Changes to the
 suppression syntax require false-positive, safety, and Notebook cell-boundary
 tests; consult [the suppression contract](docs/suppressions.md).
+
+For ML007 and future provenance-dependent rules, tests must establish exact
+resolved API paths and data-role provenance. Variable names such as `X_test`
+are never sufficient evidence. Add positive, negative, alias/rebinding, and
+unknown-boundary tests for each newly supported call form; keep sklearn out of
+runtime dependencies and do not execute analyzed code.
 
 Project-level CLI policy is intentionally limited to `[tool.statguard]`
 `exclude`, `disable-rules`, and `fail-on`; see

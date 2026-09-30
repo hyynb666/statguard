@@ -135,7 +135,17 @@ Examples below describe typical cases. Exact variable names are illustrative; im
 
 ## 6. Later-version candidates
 
-The following rules are candidates after v0.1 feedback and evidence-quality review. They are not implemented or counted in v0.1 acceptance: **ML007** test data used for model selection; **ML008** preprocessing fitted separately on train and test sets; **ST003** multiple pairwise tests after ANOVA without observed correction; **ST004** possible paired-test selection issue; **ST005** missing samples dropped immediately before inference; **ST006** incorrect interpretation of a p-value; **ST007** possible variable-scale issue in Pearson correlation. **ML009** is an additional implemented rule for potential preprocessing leakage before cross-validation (Milestone 3, Issue #17); it is outside v0.1 acceptance. Later delivery may also include a GitHub Action integration or IDE integration. Each requires its own feasibility review, evidence rules, limitations, and tests before becoming a release commitment.
+The following rules are candidates after v0.1 feedback and evidence-quality review. They are not implemented or counted in v0.1 acceptance: **ML008** preprocessing fitted separately on train and test sets; **ST003** multiple pairwise tests after ANOVA without observed correction; **ST004** possible paired-test selection issue; **ST005** missing samples dropped immediately before inference; **ST006** incorrect interpretation of a p-value; **ST007** possible variable-scale issue in Pearson correlation. **ML009** is an additional implemented rule for potential preprocessing leakage before cross-validation (Milestone 3, Issue #17); it is outside v0.1 acceptance. Later delivery may also include a GitHub Action integration or IDE integration. Each requires its own feasibility review, evidence rules, limitations, and tests before becoming a release commitment.
+
+**ML007 — Test Data Used for Model Selection** is implemented in post-v0.2
+development and remains outside the v0.1 acceptance gate and v0.2.0 release.
+Its first-version scope is limited to exact resolved
+`sklearn.model_selection.GridSearchCV` and
+`sklearn.model_selection.RandomizedSearchCV` `.fit()` calls with explicit
+feature or label input proven to have test role from an earlier supported
+`train_test_split` in the same scope. It does not infer from variable names or
+generalize to other search APIs. See [the ML007 guide](ml007.md) for evidence
+requirements and limitations.
 
 Post-v0.2 usability work adds explicit, rule-specific inline Finding
 suppression on a Python source line or the immediately following physical line.

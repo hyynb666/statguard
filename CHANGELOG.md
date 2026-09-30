@@ -13,6 +13,8 @@ Changes to StatGuard are documented here. This project follows the spirit of
 - Expanded the offline HTML report into a dashboard with richer overview
   metrics, rule/severity distributions, file/confidence filters, broader search,
   and bulk Finding controls.
+- Added ML007 for supported GridSearchCV/RandomizedSearchCV fits that consume
+  proven held-out split data; unresolved patterns remain outside its scope.
 
 ## [0.2.0] - 2026-09-30
 

@@ -303,6 +303,7 @@ def test_default_registry_exports_and_independently_disables_st002():
         "ML004",
         "ML005",
         "ML006",
+        "ML007",
         "ML009",
         "ST001",
         "ST002",
