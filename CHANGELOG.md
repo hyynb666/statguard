@@ -7,6 +7,8 @@ Changes to StatGuard are documented here. This project follows the spirit of
 
 ### Added
 
+- Added a reproducible synthetic scan benchmark and expanded CI package smoke
+  checks for installed-wheel self-scanning, benchmark JSON, and wheel contents.
 - Added ML008 for matching data-dependent preprocessing fitted and applied
   separately to train and test partitions from the same split and input.
 - Explicit inline Finding suppression with rule-specific `statguard: ignore`
