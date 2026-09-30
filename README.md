@@ -35,10 +35,14 @@ and RuleRegistry are available as Python APIs. Import aliases and basic
 assignment/call provenance are available through AnalysisContext.symbols.
 Limited split and transformation provenance is available through
 AnalysisContext.provenance.
-**ML001–ML007, ML009, ST001 and ST002 are enabled development detection rules.**
+**ML001–ML009, ST001 and ST002 are enabled development detection rules.**
 ML007 is post-v0.2 development work and is not included in the stable v0.2.0
 release. ML001–ML003 report supported
 preprocessing and feature-selection outputs that reach a later train/test split.
+ML008 reports matching data-dependent preprocessors fitted and applied
+separately to the train and test partitions of the same split and same input.
+It requires the exact same supported sklearn class on both sides. It does not
+infer from names or establish downstream use or measured evaluation impact.
 ML004 reports a supported estimator fit that receives test-role features or
 labels. ML005 reports a supported sklearn estimator scored on its training
 split without a corresponding held-out score in that model episode and scope;
@@ -50,9 +54,9 @@ loop. ST002 reports supported SciPy test calls whose complete result is a bare
 expression or assigned to `_`; it does not imply a bug. See
 [ML001](docs/ml001.md), [ML002](docs/ml002.md), [ML003](docs/ml003.md),
 [ML004](docs/ml004.md), [ML005](docs/ml005.md), [ML006](docs/ml006.md),
-[ML007](docs/ml007.md), [ML009](docs/ml009.md), [ST001](docs/st001.md), and [ST002](docs/st002.md) for
+[ML007](docs/ml007.md), [ML008](docs/ml008.md), [ML009](docs/ml009.md), [ST001](docs/st001.md), and [ST002](docs/st002.md) for
 evidence requirements and limitations.
-All eight v0.1 rules in PRD Section 5 are implemented; ML009 is an additional later rule.
+All eight v0.1 rules in PRD Section 5 are implemented; ML008 and ML009 are additional later rules.
 ML009 reports supported fitted preprocessing output passed as `X` to a later
 `cross_val_score` or `cross_validate` call. It reuses component semantics and
 same-scope provenance from ML001–ML003; it does not inspect Pipeline internals.
@@ -63,7 +67,7 @@ or Notebook execution history analysis is implemented.
 
 ## Rule matrix
 
-The v0.1 core comprises eight rules. ML009 is an additional rule and is not
+The v0.1 core comprises eight rules. ML008 and ML009 are additional rules and are not
 included in that count.
 
 | Rule ID | Name | Severity | Confidence | Primary API family | Status |
@@ -75,6 +79,7 @@ included in that count.
 | ML005 | Training-only evaluation | warning | medium | sklearn estimator `.score()` | v0.1 core |
 | ML006 | Random split without a fixed seed | info | high | `train_test_split` | v0.1 core |
 | ML007 | Test data used for model selection | warning | medium | sklearn `GridSearchCV` / `RandomizedSearchCV` | post-v0.2 development |
+| ML008 | Preprocessing fitted separately on train and test | warning | medium | sklearn preprocessing | post-v0.2 development |
 | ST001 | Repeated tests without observed correction | warning | medium | resolved `scipy.stats` tests | v0.1 core |
 | ST002 | Discarded statistical test result | info | high | resolved `scipy.stats` tests | v0.1 core |
 | ML009 | Preprocessing leakage before cross-validation | warning | medium | sklearn preprocessing and CV APIs | additional rule |
@@ -207,7 +212,7 @@ Exit codes:
 
 Warnings and informational findings do not fail by default. `--fail-on`
 explicitly sets a threshold. An undetermined notice does not trigger it.
-Disable ML001, ML002, ML003, ML004, ML005, ML006, ML007, ML009, ST001, or ST002
+Disable ML001, ML002, ML003, ML004, ML005, ML006, ML007, ML008, ML009, ST001, or ST002
 independently with `--disable-rule RULE_ID`. ML007 requires exact search API
 resolution and test-role split provenance; see [its rule guide](docs/ml007.md).
 
@@ -260,7 +265,7 @@ src/statguard/
   core/                  # Finding, Evidence, Severity, Confidence, Rule, RuleRegistry
   parsers/               # PythonSourceParser and NotebookParser
   reporters/             # Console, JSON, HTML, and SARIF rendering
-  rules/                 # ML001–ML007, ML009, ST001–ST002 and the built-in registry
+  rules/                 # ML001–ML009, ST001–ST002 and the built-in registry
 ```
 
 The Python parser uses `ast` and keeps original AST nodes and Unicode-aware
