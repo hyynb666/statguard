@@ -43,6 +43,12 @@ exercise the installed package; do not add the source directory to `PYTHONPATH`
 or pytest's import path to hide packaging errors. CI repeats tests and lint on
 Windows and Linux with Python 3.11–3.14 and checks a built wheel independently.
 
+For performance-sensitive changes to parsing, symbol resolution, provenance,
+scanning, or reporting, compare both the synthetic `smoke` and `medium` profiles
+before and after the change. Record each profile, repeat count, Python version,
+operating system, and median; do not treat one machine's timing as a release
+threshold. See [benchmark methodology](docs/performance.md).
+
 ## Pull requests
 
 Open a pull request against `main` and use the repository pull request template.

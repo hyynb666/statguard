@@ -295,11 +295,15 @@ python -m pytest
 python -m ruff check .
 python -m ruff format --check .
 python -m build
+python scripts/benchmark_statguard.py --profile smoke --repeat 3
 ```
 
 CI tests an installed package and builds an isolated wheel. See
 [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md); [docs/PRD.md](docs/PRD.md)
 defines the product scope and rule acceptance criteria.
+The optional synthetic benchmark supports `smoke`, `medium`, and `stress`
+profiles; its measurements are for comparison on a recorded environment, not a
+performance guarantee. See [benchmark methodology](docs/performance.md).
 
 See also the [Code of Conduct](CODE_OF_CONDUCT.md), [Security Policy](SECURITY.md),
 [v0.1 release audit](docs/release-audit-v0.1.md),

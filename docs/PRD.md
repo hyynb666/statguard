@@ -202,7 +202,7 @@ Dependencies should be limited to what parsing, CLI, and reporting require. The 
 - **Reproducibility:** Stable ordering and deterministic output for the same inputs and configuration.
 - **Usability:** File and notebook locations are actionable; text and JSON convey equivalent finding content.
 - **Maintainability:** Rules are independently registered, documented, and tested; public contributions follow a documented workflow.
-- **Performance:** The tool should handle ordinary projects without executing code or loading notebook outputs into analysis. Measure representative scans before setting numerical performance targets.
+- **Performance:** The tool should handle ordinary projects without executing code or loading notebook outputs into analysis. Use the synthetic benchmark harness to measure representative scans; do not impose a hard-coded wall-clock service-level target because results depend on the host environment.
 
 ## 9. Test and release acceptance
 
