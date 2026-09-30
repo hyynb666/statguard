@@ -31,46 +31,50 @@ def test_default_registry_contains_exactly_one_instance_of_each_release_rule():
     assert set(rule_ids) == V0_1_CORE_RULE_IDS | ADDITIONAL_RULE_IDS
 
 
-def test_release_version_and_alpha_classifier_are_consistent():
+def test_release_version_and_beta_classifier_are_consistent():
     metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
-    assert metadata["version"] == "0.3.0.dev0"
+    assert metadata["version"] == "1.0.0"
     assert metadata["requires-python"] == ">=3.11"
     assert metadata["dependencies"] == []
     assert metadata["license"] == "MIT"
-    assert "Development Status :: 3 - Alpha" in metadata["classifiers"]
+    assert "Development Status :: 4 - Beta" in metadata["classifiers"]
     assert not any("Pre-Alpha" in classifier for classifier in metadata["classifiers"])
 
 
-def test_readme_describes_current_release_install_and_no_pypi_availability():
+def test_readme_describes_v1_current_release_install_and_no_pypi_availability():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
-    assert "StatGuard v0.2.0 is the current public Alpha release" in readme
-    assert "The next planned public release is v1.0.0, subject to the v1" in readme
-    assert "v1.0.0 has not been released" in readme
-    assert "package version\n`0.3.0.dev0`" in readme
-    assert "--branch v0.2.0" in readme
-    assert "releases/tag/v0.2.0" in readme
+    assert "StatGuard v1.0.0 is the current public Beta release" in readme
+    assert "first compatibility-defined major public release" in readme
+    assert "--branch v1.0.0" in readme
+    assert "releases/tag/v1.0.0" in readme
     assert "not published to PyPI" in readme
     assert "pip install statguard" not in readme
 
 
-def test_readme_uses_stable_action_reference_and_describes_release_scope():
+def test_readme_uses_v1_action_reference_and_describes_release_scope():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
-    assert "hyynb666/statguard@v0.2.0" in readme
-    assert "first stable tagged release containing the Composite" in readme
-    assert "does not add or" in readme and "change detection rules" in readme
+    assert "hyynb666/statguard@v1.0.0" in readme
+    assert "current stable tagged release containing the Composite" in readme
     assert "Console, JSON, HTML, or SARIF" in readme
 
 
-def test_changelog_freezes_v02_and_preserves_v01_history():
+def test_changelog_freezes_v1_and_preserves_v02_and_v01_history():
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-    unreleased = changelog.split("## [0.2.0]", maxsplit=1)[0]
+    unreleased, released = changelog.split("## [1.0.0] - 2026-09-30", maxsplit=1)
 
-    assert "## [Unreleased]\n\n" in unreleased
-    assert "### Added" in unreleased
-    assert "inline Finding suppression" in unreleased
+    expected_unreleased = (
+        "# Changelog\n\n"
+        "Changes to StatGuard are documented here. This project follows the spirit of\n"
+        "[Keep a Changelog](https://keepachangelog.com/en/1.1.0/).\n\n"
+        "## [Unreleased]\n\n"
+    )
+    assert unreleased == expected_unreleased
+    assert "ML007" in released and "ML008" in released
+    assert "inline Finding suppression" in released
+    assert "compatibility policy" in released
     assert "## [0.2.0] - 2026-09-30\n\n### Added" in changelog
     assert "- Project policy from `[tool.statguard]`" in changelog
     assert "- GitHub composite Action integration" in changelog
@@ -104,13 +108,13 @@ def test_v01_release_notes_remain_and_v02_notes_cover_release_scope():
     assert "not published to PyPI" in current
 
 
-def test_v02_action_guides_recommend_stable_tag_without_changing_upload_action():
+def test_v1_action_guides_recommend_stable_tag_without_changing_upload_action():
     action_docs = (ROOT / "docs/github-action.md").read_text(encoding="utf-8")
     sarif_docs = (ROOT / "docs/sarif.md").read_text(encoding="utf-8")
 
-    assert "hyynb666/statguard@v0.2.0" in action_docs
+    assert "hyynb666/statguard@v1.0.0" in action_docs
     assert "uses: hyynb666/statguard@main" not in action_docs
-    assert "hyynb666/statguard@v0.2.0" in sarif_docs
+    assert "hyynb666/statguard@v1.0.0" in sarif_docs
     assert "github/codeql-action/upload-sarif@v4" in sarif_docs
     assert "uses: hyynb666/statguard@main" not in sarif_docs
 
@@ -125,7 +129,7 @@ def test_v02_release_audit_and_checklist_are_explicit():
     assert "PyPI publication is not authorized" in checklist
 
 
-def test_v1_audit_and_compatibility_policy_are_planned_not_published():
+def test_v1_release_audit_and_compatibility_policy_are_finalized():
     audit = (ROOT / "docs/release-audit-v1.0.md").read_text(encoding="utf-8")
     policy = (ROOT / "docs/compatibility.md").read_text(encoding="utf-8")
     checklist = (ROOT / "docs/release-checklist-v1.0.md").read_text(encoding="utf-8")
@@ -133,13 +137,17 @@ def test_v1_audit_and_compatibility_policy_are_planned_not_published():
     metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
     assert "READY FOR v1.0.0 RELEASE" in audit
-    assert "The stable release remains v0.2.0" in policy
+    assert "This policy applies to StatGuard v1.0.0" in policy
     assert "JSON schema version `1.0`" in policy
     assert "ML001–ML009, ST001, and ST002" in policy
-    assert "Development Status :: 3 - Alpha" in metadata["classifiers"]
-    assert "Beta" in audit and "0.3.0.dev0" in audit
-    assert "pending separate authorization" in checklist
-    assert "does not announce that" in notes and "v1.0.0 exists" in notes
+    assert "Development Status :: 4 - Beta" in metadata["classifiers"]
+    assert "Beta" in audit
+    assert "Release execution" in checklist
+    assert "StatGuard v1.0.0 is the first compatibility-defined major public release" in notes
+    assert "(draft)" not in notes
+    assert "planned" not in notes.casefold()
+    assert "https://github.com/hyynb666/statguard/blob/v1.0.0/docs/compatibility.md" in notes
+    assert "uses: hyynb666/statguard@v1.0.0" in notes
     assert "not published to PyPI" in notes
 
 

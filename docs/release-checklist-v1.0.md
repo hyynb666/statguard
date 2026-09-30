@@ -1,42 +1,39 @@
-# StatGuard v1.0.0 release checklist (draft)
+# StatGuard v1.0.0 Release Checklist
 
-This checklist records audit gates for a possible v1.0.0 release. It does not
-perform release actions. Version freezing, tag creation, GitHub Release
-publication, artifact upload, checksum generation, and any package publication
-belong to a separately authorized release task.
+This checklist records the v1.0.0 release gates and execution state. Release
+actions are checked only after they are verified. PyPI publication is outside
+the release scope and is not authorized.
 
 ## Audit and compatibility gates
 
-- [ ] Review `docs/release-audit-v1.0.md` and resolve every blocker.
-- [ ] Confirm all 11 default rule IDs have implementation, tests, and rule
-  documentation: ML001–ML009, ST001, and ST002.
-- [ ] Confirm local pytest, Ruff lint, Ruff format, and diff checks pass.
-- [ ] Confirm CI covers Windows/Linux and Python 3.11–3.14 and passes on the
-  release candidate commit.
-- [ ] Build and inspect both wheel and sdist; install each in fresh isolated
-  environments and run CLI/API smoke checks.
-- [ ] Confirm JSON schema 1.0, CLI/exit codes, project configuration, inline
-  suppression, GitHub Action inputs, SARIF 2.1.0, and `statguard.core` exports
-  match `docs/compatibility.md`.
-- [ ] Recheck no-execution, Notebook-output isolation, report escaping/CSP,
-  Action path/shell safety, deterministic output, and runtime dependency policy.
-- [ ] Review draft release notes, README links, and current/stable tag wording.
-- [ ] Review the package Development Status classifier. The current metadata is
-  Alpha; the audit recommends **Beta** for v1.0.0, not Production/Stable.
+- [x] Issue #32 audit decision is `READY FOR v1.0.0 RELEASE`.
+- [x] All 11 default rules (ML001–ML009, ST001, ST002) have implementation,
+  tests, and rule documentation.
+- [x] Baseline full pytest, Ruff lint, Ruff format, and diff checks passed.
+- [x] Baseline CI covered Windows/Linux and Python 3.11–3.14 and passed.
+- [x] Baseline wheel and sdist built and installed in isolated environments.
+- [x] Compatibility contracts cover JSON 1.0, CLI/exit codes, config,
+  suppression, GitHub Action inputs, SARIF 2.1.0, and `statguard.core`.
+- [x] Audit reviewed no-execution, Notebook-output isolation, HTML escaping/CSP,
+  Action path/shell safety, deterministic output, and runtime dependencies.
+- [x] Release notes, README wording, and historical v0.1/v0.2 records were
+  reviewed without changing release history.
+- [x] The v1 classifier is Beta; Production/Stable is not claimed.
 
-## Release actions — pending separate authorization
+## Release execution
 
-- [ ] Freeze package version and `[Unreleased]` changelog for the approved
-  release date.
-- [ ] Merge the separately reviewed release PR and verify main CI.
-- [ ] Create and push the approved annotated v1.0.0 tag.
-- [ ] Build final artifacts from the tag; verify wheel/sdist contents and
+- [x] Freeze package version at `1.0.0` and freeze the changelog for
+  `2026-09-30`.
+- [ ] Merge the reviewed release PR and confirm its CI.
+- [ ] Create and push annotated tag `v1.0.0` on the release merge commit.
+- [ ] Build final wheel and sdist from the tag; inspect contents and verify
   SHA-256 checksums.
-- [ ] Create the GitHub Release from v1.0.0, attach only approved artifacts,
-  and verify the release page and assets.
-- [ ] Confirm v0.1.0 and v0.2.0 tags, Releases, and assets remain unchanged.
-- [ ] Confirm the project remains not published on PyPI unless a distinct
-  future authorization explicitly changes that status.
+- [ ] Publish the non-draft, non-prerelease GitHub Release with the wheel,
+  sdist, and `SHA256SUMS.txt`; verify all assets.
+- [x] Confirm v0.1.0 and v0.2.0 tags, Releases, and assets are preserved.
+- [x] Confirm no PyPI publish operation or credential setup is part of this
+  release.
 
-No v1.0.0 version bump, tag, GitHub Release, release artifact upload, or PyPI
-publication is performed by the Issue #32 audit.
+After the release gates complete, the final report records their verified
+state. This checklist is not permission to publish to PyPI or start another
+development cycle.

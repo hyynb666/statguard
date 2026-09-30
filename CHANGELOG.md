@@ -5,6 +5,8 @@ Changes to StatGuard are documented here. This project follows the spirit of
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-30
+
 ### Added
 
 - Added a reproducible synthetic scan benchmark and expanded CI package smoke
@@ -19,6 +21,11 @@ Changes to StatGuard are documented here. This project follows the spirit of
   and bulk Finding controls.
 - Added ML007 for supported GridSearchCV/RandomizedSearchCV fits that consume
   proven held-out split data; unresolved patterns remain outside its scope.
+- Froze the v1 compatibility policy for the CLI, exit codes, rule IDs, JSON
+  schema, project configuration, inline suppression, GitHub Action inputs,
+  SARIF output, and public `statguard.core` API.
+- Released the compatibility-defined v1 line with all 11 built-in rules:
+  ML001–ML009 and ST001–ST002.
 
 ## [0.2.0] - 2026-09-30
 

@@ -1,9 +1,9 @@
 # Inline Finding suppression
 
-Inline suppression is a post-v0.2 development capability for Python source and
-Notebook Python code cells. It filters selected Findings after rules run; it
-does not alter rule logic, prove a risk harmless, or suppress parser/rule errors
-and Notebook notices.
+Inline suppression is a v1 compatibility-managed capability for Python source
+and Notebook Python code cells. It filters selected Findings after rules run;
+it does not alter rule logic, prove a risk harmless, or suppress parser/rule
+errors and Notebook notices.
 
 ## Syntax and line semantics
 

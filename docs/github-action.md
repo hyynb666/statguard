@@ -1,11 +1,8 @@
 # GitHub Action
 
-StatGuard v0.2.0 contains the first stable tagged Composite Action. Use the
-version tag for reproducible workflows. `hyynb666/statguard@main` continues to
-track development and may change after development resumes.
-
-Inline Finding suppression is available on the development `main` branch only
-until a later release; it is not included in the stable v0.2.0 Action tag.
+StatGuard v1.0.0 is the current stable tagged Composite Action. Use the version
+tag for reproducible workflows. `hyynb666/statguard@main` is a mutable
+development reference and may change.
 
 ## Basic use
 
@@ -15,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: hyynb666/statguard@v0.2.0
+      - uses: hyynb666/statguard@v1.0.0
         with:
           path: .
 ```
@@ -52,7 +49,7 @@ applies. Since the Action runs in `GITHUB_WORKSPACE`, this means its root
 To fail the job when at least one warning or error Finding is present:
 
 ```yaml
-- uses: hyynb666/statguard@v0.2.0
+- uses: hyynb666/statguard@v1.0.0
   with:
     path: .
     fail-on: warning
@@ -69,7 +66,7 @@ JSON, HTML, and SARIF can be saved for a later workflow step. See the
 [SARIF and Code Scanning guide](sarif.md) for upload patterns. Example JSON:
 
 ```yaml
-- uses: hyynb666/statguard@v0.2.0
+- uses: hyynb666/statguard@v1.0.0
   with:
     path: .
     format: json
@@ -79,7 +76,7 @@ JSON, HTML, and SARIF can be saved for a later workflow step. See the
 HTML reports can be uploaded by the calling workflow when desired:
 
 ```yaml
-- uses: hyynb666/statguard@v0.2.0
+- uses: hyynb666/statguard@v1.0.0
   with:
     path: .
     format: html
@@ -112,5 +109,5 @@ requests `security-events: write` permission itself.
   upload policy remain the calling workflow's responsibility.
 - Static findings are limited to documented, resolvable code patterns. No
   finding does not prove that a workflow is statistically sound.
-- `@main` is a mutable development reference. Use `@v0.2.0` for the released
+- `@main` is a mutable development reference. Use `@v1.0.0` for the released
   Action contract or pin a reviewed commit when required by your policy.
