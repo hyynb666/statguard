@@ -154,19 +154,19 @@ produces a notice rather than a claim of statistical safety.
 `--output` creates missing parent directories and writes the selected report
 format as UTF-8. It refuses to overwrite a scanned input. Without `--output`,
 the report goes to stdout; JSON and SARIF modes write only their valid JSON
-documents, and HTML mode writes a complete HTML document. HTML provides
-rule/severity filters and
-case-insensitive search over finding paths, rule IDs, and messages. Findings
-remain expandable without JavaScript. Failed report writes are reported on
-stderr.
+documents, and HTML mode writes a complete HTML document. HTML provides a
+self-contained offline dashboard with overview metrics, rule/severity
+distributions, file navigation, Finding filters by rule/severity/confidence/file,
+and case-insensitive search. Findings remain expandable without JavaScript.
+Failed report writes are reported on stderr.
 
 Console output shows each Finding's location, severity, rule ID, evidence,
 risk, and suggested fix, then file, diagnostic and scan-error totals. JSON
 uses the documented schema. SARIF 2.1.0 is available for integrations such as
 GitHub Code Scanning; Notebook cell locations remain SARIF properties and are
-not represented as physical `.ipynb` JSON lines. HTML creates a self-contained,
-offline report with escaped Finding text and scan status; it uses a fixed local filter script
-pinned by a CSP hash and no remote resources.
+not represented as physical `.ipynb` JSON lines. HTML creates a self-contained
+offline dashboard with escaped Finding text and scan status; it uses a fixed
+local interaction script pinned by a CSP hash and no remote resources.
 Parser errors, unsupported Notebook cells, and rule errors are distinct from
 Findings. See [reporting](docs/reporting.md) and the
 [HTML report guide](docs/html-report.md). Scanning continues through other

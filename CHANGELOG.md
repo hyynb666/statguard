@@ -10,6 +10,9 @@ Changes to StatGuard are documented here. This project follows the spirit of
 - Explicit inline Finding suppression with rule-specific `statguard: ignore`
   and `statguard: ignore-next-line` comments for Python files and Notebook code
   cells.
+- Expanded the offline HTML report into a dashboard with richer overview
+  metrics, rule/severity distributions, file/confidence filters, broader search,
+  and bulk Finding controls.
 
 ## [0.2.0] - 2026-09-30
 

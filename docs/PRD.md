@@ -144,6 +144,12 @@ evidence, and must not hide parse/rule errors or Notebook notices. Notebook
 directives are local to one code cell. The original v0.1 acceptance criteria
 above remain historical and are not rewritten by later capabilities.
 
+Post-v0.2 reporting work also expands the standalone offline HTML report into a
+dashboard with scan overview metrics, severity and rule distributions, file
+overview, Finding filters, search, and visible-card controls. It remains a
+self-contained report and does not change Finding, rule, JSON, SARIF, or exit
+semantics; see [the HTML report guide](html-report.md).
+
 ## 7. Architecture and implementation constraints
 
 Use Python 3.11+, `pyproject.toml`, and a `src/` layout. A proposed package boundary is:
