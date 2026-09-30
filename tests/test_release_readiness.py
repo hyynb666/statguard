@@ -46,7 +46,9 @@ def test_readme_describes_current_release_install_and_no_pypi_availability():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
     assert "StatGuard v0.2.0 is the current public Alpha release" in readme
-    assert "main` branch is the development line toward v0.3.0" in readme
+    assert "The next planned public release is v1.0.0, subject to the v1" in readme
+    assert "v1.0.0 has not been released" in readme
+    assert "package version\n`0.3.0.dev0`" in readme
     assert "--branch v0.2.0" in readme
     assert "releases/tag/v0.2.0" in readme
     assert "not published to PyPI" in readme
@@ -121,6 +123,24 @@ def test_v02_release_audit_and_checklist_are_explicit():
     assert "v0.1.0" in checklist
     assert "issue26-final-release-dist" in checklist
     assert "PyPI publication is not authorized" in checklist
+
+
+def test_v1_audit_and_compatibility_policy_are_planned_not_published():
+    audit = (ROOT / "docs/release-audit-v1.0.md").read_text(encoding="utf-8")
+    policy = (ROOT / "docs/compatibility.md").read_text(encoding="utf-8")
+    checklist = (ROOT / "docs/release-checklist-v1.0.md").read_text(encoding="utf-8")
+    notes = (ROOT / "docs/releases/v1.0.0.md").read_text(encoding="utf-8")
+    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+
+    assert "READY FOR v1.0.0 RELEASE" in audit
+    assert "The stable release remains v0.2.0" in policy
+    assert "JSON schema version `1.0`" in policy
+    assert "ML001–ML009, ST001, and ST002" in policy
+    assert "Development Status :: 3 - Alpha" in metadata["classifiers"]
+    assert "Beta" in audit and "0.3.0.dev0" in audit
+    assert "pending separate authorization" in checklist
+    assert "does not announce that" in notes and "v1.0.0 exists" in notes
+    assert "not published to PyPI" in notes
 
 
 def test_repository_markdown_links_resolve_to_local_paths():
