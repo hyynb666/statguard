@@ -5,7 +5,7 @@ read-only view of one successfully parsed Python unit. `statguard.analyzer.Analy
 connects the existing parsers and RuleRegistry, runs enabled rules, and returns
 structured results. The CLI, scanner and reporters wrap this API; see
 [reporting.md](reporting.md). The CLI enables [ML001](ml001.md),
-[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), [ML006](ml006.md), [ML009](ml009.md), [ST001](st001.md), and [ST002](st002.md); Analyzer itself
+[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), [ML006](ml006.md), [ML007](ml007.md), [ML008](ml008.md), [ML009](ml009.md), [ST001](st001.md), and [ST002](st002.md); Analyzer itself
 still uses the explicitly supplied registry. Cross-unit data-flow analysis is
 not included.
 
@@ -135,12 +135,13 @@ The lazily constructed AnalysisContext also exposes the same cached
 `SymbolResolver` and `ProvenanceTracker` used by rule execution. Provenance
 includes bounded same-instance fit/transform evidence for the allowlisted
 ML001–ML003 components. ML009 reuses this evidence for cross-validation input
-lineage. It is confined to one supported AST scope and is not shared across
-Notebook cells or function invocations.
+lineage; ML008 pairs it with train/test split roles to detect separate
+partition-specific fits. It is confined to one supported AST scope and is not
+shared across Notebook cells or function invocations.
 
 The framework validates result shape and identity; it cannot prove a rule's
 statistical reasoning, verify every source coordinate, or prevent a trusted
 rule from deliberately executing code. Rule authors must follow AGENTS.md and
 test their own evidence and abstention behavior. The built-in [ML001](ml001.md),
-[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), [ML006](ml006.md), [ML009](ml009.md), [ST001](st001.md), and [ST002](st002.md) implementations
+[ML002](ml002.md), [ML003](ml003.md), [ML004](ml004.md), [ML005](ml005.md), [ML006](ml006.md), [ML007](ml007.md), [ML008](ml008.md), [ML009](ml009.md), [ST001](st001.md), and [ST002](st002.md) implementations
 are documented separately.

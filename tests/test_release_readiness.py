@@ -20,7 +20,7 @@ V0_1_CORE_RULE_IDS = {
     "ST001",
     "ST002",
 }
-ADDITIONAL_RULE_IDS = {"ML007", "ML009"}
+ADDITIONAL_RULE_IDS = {"ML007", "ML008", "ML009"}
 MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^\s)]+)(?:\s+[^)]*)?\)")
 
 

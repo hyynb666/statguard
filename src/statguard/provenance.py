@@ -149,6 +149,11 @@ class ProvenanceTracker:
             if isinstance(binding.node, ast.arg):
                 return binding
             assigned = binding.value
+            # Tuple-unpacked names still denote a stable point-of-use binding,
+            # even when the container's runtime value is unknown. Split-role
+            # provenance remains independently required by rules that need it.
+            if assigned.unpack_source is not None:
+                return binding
             if assigned.kind is ValueKind.ALIAS and assigned.binding is not None:
                 value = assigned
                 continue

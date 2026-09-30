@@ -131,11 +131,11 @@ Examples below describe typical cases. Exact variable names are illustrative; im
 
 **Do not trigger:** The result is assigned, returned, passed to another function, printed, or explicitly recorded. **Boundary:** A call whose identity cannot be resolved as a test is undetermined; assignment to `_` is still a deliberate discard and should trigger with wording that acknowledges intent. **Acceptance:** Cover a bare call, `_` assignment, assignment/return/logging, and an unrelated function call.
 
-**Implementation status:** Implemented; see [ST002 rule documentation](st002.md). All eight v0.1 rules in this section are implemented. ML009 is an additional later-version rule and is not part of the v0.1 count.
+**Implementation status:** Implemented; see [ST002 rule documentation](st002.md). All eight v0.1 rules in this section are implemented. ML008 and ML009 are additional later-version rules and are not part of the v0.1 count.
 
 ## 6. Later-version candidates
 
-The following rules are candidates after v0.1 feedback and evidence-quality review. They are not implemented or counted in v0.1 acceptance: **ML008** preprocessing fitted separately on train and test sets; **ST003** multiple pairwise tests after ANOVA without observed correction; **ST004** possible paired-test selection issue; **ST005** missing samples dropped immediately before inference; **ST006** incorrect interpretation of a p-value; **ST007** possible variable-scale issue in Pearson correlation. **ML009** is an additional implemented rule for potential preprocessing leakage before cross-validation (Milestone 3, Issue #17); it is outside v0.1 acceptance. Later delivery may also include a GitHub Action integration or IDE integration. Each requires its own feasibility review, evidence rules, limitations, and tests before becoming a release commitment.
+The following remain candidates after v0.1 feedback and evidence-quality review; they are not implemented or counted in v0.1 acceptance: **ST003** multiple pairwise tests after ANOVA without observed correction; **ST004** possible paired-test selection issue; **ST005** missing samples dropped immediately before inference; **ST006** incorrect interpretation of a p-value; **ST007** possible variable-scale issue in Pearson correlation. Later delivery may also include a GitHub Action integration or IDE integration. Each requires its own feasibility review, evidence rules, limitations, and tests before becoming a release commitment.
 
 **ML007 — Test Data Used for Model Selection** is implemented in post-v0.2
 development and remains outside the v0.1 acceptance gate and v0.2.0 release.
@@ -146,6 +146,18 @@ feature or label input proven to have test role from an earlier supported
 `train_test_split` in the same scope. It does not infer from variable names or
 generalize to other search APIs. See [the ML007 guide](ml007.md) for evidence
 requirements and limitations.
+
+**ML008 — Preprocessing Fitted Separately on Train and Test Sets** is
+implemented as additional post-v0.2 development work and is outside the v0.1
+acceptance gate and v0.2.0 release. It requires matching train/test roles from
+the same resolved `train_test_split` input, exact same supported
+data-dependent preprocessing class, and an observed transform on both sides.
+It reuses the existing component semantics and fitted-transform evidence; see
+[the ML008 guide](ml008.md) for supported patterns and abstention boundaries.
+
+**ML009 — Potential Preprocessing Leakage Before Cross-Validation** is an
+additional implemented rule (Milestone 3, Issue #17) outside the v0.1
+acceptance gate; see [the ML009 guide](ml009.md).
 
 Post-v0.2 usability work adds explicit, rule-specific inline Finding
 suppression on a Python source line or the immediately following physical line.

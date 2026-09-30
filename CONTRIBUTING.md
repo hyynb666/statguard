@@ -3,9 +3,9 @@
 Read [AGENTS.md](AGENTS.md) and [docs/PRD.md](docs/PRD.md) before changing behavior.
 The foundation includes packaging, CLI scanning, Console/JSON reporting, public
 interfaces, Python and Notebook parsing, and Analyzer execution. Built-in rules
-ML001–ML007, ML009, ST001 and ST002 are documented in `docs/`. New rule work should follow the evidence,
+ML001–ML009, ST001 and ST002 are documented in `docs/`. New rule work should follow the evidence,
 abstention, testing, and documentation conventions already established there.
-The eight v0.1 core rules are ML001–ML006 and ST001–ST002; ML009 is additional.
+The eight v0.1 core rules are ML001–ML006 and ST001–ST002; ML008 and ML009 are additional.
 See the [Code of Conduct](CODE_OF_CONDUCT.md) and [Security Policy](SECURITY.md)
 when participating or reporting a vulnerability.
 
@@ -224,6 +224,17 @@ enabled and `random_state` is omitted or statically `None`; known integer seeds
 and `shuffle=False` are safe for this rule. Unknown keyword expansions or
 dynamic settings must abstain. This is an informational reproducibility prompt,
 not a correctness error.
+
+## ML008 changes
+
+Follow the [ML008 contract](docs/ml008.md). Pair only applications whose X
+inputs have train/test roles from the same split and input index, whose exact
+supported transformer class and data-dependent semantics match, and whose
+transforms are explicit. Direct `fit_transform` evidence must have a stable
+receiver; separate `fit`/`transform` evidence must come from
+`ProvenanceTracker.fitted_transforms`. Require a train-side application and
+report at the test-side fit. Never pair by variable names, split spelling,
+different classes, or inferred downstream model use.
 
 ## ML009 changes
 

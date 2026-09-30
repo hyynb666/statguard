@@ -491,6 +491,7 @@ def test_rule_registration_is_unique_ordered_disableable_and_exported():
         "ML005",
         "ML006",
         "ML007",
+        "ML008",
         "ML009",
         "ST001",
         "ST002",

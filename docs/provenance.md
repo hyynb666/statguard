@@ -87,11 +87,12 @@ sequences. Each record contains a deterministic constructor-based `instance_id`,
 fit and transform `DataOrigin` records, the fit callee, and their shared scope
 and evaluation sites. The tracker uses the existing SymbolResolver to follow
 receiver aliases and requires both calls to read the same stable input binding
-version (including simple aliases). Equal unbound variable spellings are not
-accepted as source evidence. ML001–ML003 apply their own statistical semantics
+version (including simple aliases and tuple-unpacked binding versions). Equal
+unbound variable spellings are not accepted as source evidence. ML001–ML003 apply their own statistical semantics
 when output reaches a later split. ML009 reuses this evidence when output
 instead reaches a supported cross-validation `X` argument. Provenance remains
-evidence only; it emits no diagnostics.
+evidence only; it emits no diagnostics. ML008 combines these transform facts
+with existing `SplitRole` evidence and does not add new split-role semantics.
 
 State is rebuilt for each supported straight-line scope. A later `.fit` replaces
 the earlier fit evidence. Passing the instance to another call or invoking an
