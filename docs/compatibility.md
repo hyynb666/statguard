@@ -1,9 +1,9 @@
-# Compatibility policy for the planned v1.0 line
+# StatGuard v1 Compatibility Policy
 
-This document defines the compatibility boundary proposed for StatGuard v1.0.
-The current development package is still `0.3.0.dev0`; v1.0.0 has not been
-released. The policy takes effect for the public v1 line only when that release
-is separately approved and published. The stable release remains v0.2.0.
+This policy applies to StatGuard v1.0.0 and subsequent compatible v1.x
+releases. It defines the public contracts managed for compatibility; it does
+not imply that StatGuard understands every statistical workflow or that its
+internal implementation is frozen.
 
 ## Supported runtime and package
 
@@ -35,16 +35,14 @@ alters these contracts requires a compatibility review and release note.
 
 ## Built-in rule identifiers
 
-The planned v1 default registry contains exactly these 11 built-in rules:
+The v1 default registry contains exactly these 11 built-in rules:
 **ML001–ML009, ST001, and ST002**. Each ID is a stable diagnostic identifier
 and is accepted by `--disable-rule` and the `disable-rules` project setting.
 An additive rule may expand the default Finding set and must be documented and
 called out in release notes. Renumbering or changing the meaning of an existing
 ID is incompatible and requires an explicit migration decision.
 
-The stable v0.2.0 release remains ML001–ML006, ML009, ST001, and ST002. It does
-not contain ML007 or ML008. The current development package is not the stable
-v0.2.0 release.
+The historical v0.2.0 release predates ML007 and ML008 and remains unchanged.
 
 ## JSON, SARIF, and other reports
 
@@ -90,9 +88,9 @@ The composite Action contract has nine inputs: `path`, `python-version`,
 without changing the meaning of these inputs. Changing a default, accepted
 value, path boundary, or input meaning requires a compatibility review.
 
-The Action writes reports; it does not upload SARIF or other artifacts. Its
-current stable README and Action guide reference remains `@v0.2.0` until a
-separate release task updates them.
+The Action writes reports; it does not upload SARIF or other artifacts. The
+recommended stable Action reference is `@v1.0.0`; `@main` is mutable and tracks
+development.
 
 ## Public Python API
 

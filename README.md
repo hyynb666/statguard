@@ -1,14 +1,14 @@
 # StatGuard
 
-StatGuard v0.2.0 is the current public Alpha release on GitHub: a conservative
-static analyzer for statistical validity, model evaluation, and reproducibility
-risks in Python scripts and Jupyter Notebooks. StatGuard parses source without
-importing or executing submitted code.
+StatGuard v1.0.0 is the current public Beta release on GitHub: a conservative
+static analyzer for documented statistical, model-evaluation, and
+reproducibility risks in Python scripts and Jupyter Notebooks. StatGuard parses
+source without importing or executing submitted code. Findings are review
+prompts based on source evidence, not proof that an analysis is invalid.
 
-The `main` branch remains the development line at package version
-`0.3.0.dev0`. The next planned public release is v1.0.0, subject to the v1
-release audit; v1.0.0 has not been released. Inline Finding suppression is
-available on development `main` only and is not included in the v0.2.0 release.
+StatGuard v1.0.0 is the first compatibility-defined major public release. Its
+compatibility policy defines the supported CLI, report, configuration, Action,
+and core Python API surfaces without claiming universal statistical coverage.
 
 ## Why StatGuard?
 
@@ -17,15 +17,16 @@ workflow risks. It focuses on documented source patterns and traceable data
 lineage; it is not a general-purpose Python linter or a validator of statistical
 correctness. Findings are review prompts, not proof that an analysis is wrong.
 
-## What's new in v0.2.0
+## What's included in v1.0.0
 
-- GitHub Composite Action for repository scans.
+- Eleven built-in rules: ML001–ML009 and ST001–ST002.
+- Python and Jupyter Notebook static analysis with conservative provenance.
+- Rule-specific inline Finding suppression.
 - Project policy through `[tool.statguard]` in `pyproject.toml`.
-- SARIF 2.1.0 output and GitHub Code Scanning integration guidance.
-- Workspace-contained Action inputs and outputs with Linux/Windows smoke tests.
-
-This release adds integrations and project configuration; it does not add or
-change detection rules.
+- A GitHub Composite Action with workspace-contained paths.
+- Console, JSON schema 1.0, offline interactive HTML, and SARIF 2.1.0 reports.
+- Deterministic output, a reproducible benchmark harness, and a documented
+  v1 compatibility policy.
 
 ## Current capabilities and limits
 
@@ -36,9 +37,8 @@ and RuleRegistry are available as Python APIs. Import aliases and basic
 assignment/call provenance are available through AnalysisContext.symbols.
 Limited split and transformation provenance is available through
 AnalysisContext.provenance.
-**ML001–ML009, ST001 and ST002 are enabled development detection rules.**
-ML007 is post-v0.2 development work and is not included in the stable v0.2.0
-release. ML001–ML003 report supported
+**ML001–ML009 and ST001–ST002 are the 11 enabled v1 detection rules.**
+ML001–ML003 report supported
 preprocessing and feature-selection outputs that reach a later train/test split.
 ML008 reports matching data-dependent preprocessors fitted and applied
 separately to the train and test partitions of the same split and same input.
@@ -64,33 +64,31 @@ ML009 reports supported fitted preprocessing output passed as `X` to a later
 `cross_val_score` or `cross_validate` call. It reuses component semantics and
 same-scope provenance from ML001–ML003; it does not inspect Pipeline internals.
 ML009 remains the separate cross-validation preprocessing rule; ML005 retains
-its PRD meaning of training-only evaluation. The planned v1.0.0 release is
-intended to include the currently audited 11-rule development set, subject to
-the release audit; the stable v0.2.0 release continues to exclude ML007 and
-ML008.
+its PRD meaning of training-only evaluation. The v0.2.0 release remains a
+historical release and predates ML007 and ML008.
 A clean scan does not establish statistical correctness. No cross-cell data flow
 or Notebook execution history analysis is implemented.
 
 ## Rule matrix
 
-This development matrix lists 11 rules: nine ML rules and two ST rules. The
-v0.1 core comprises eight rules (ML001–ML006 and ST001–ST002); ML009 is an
-additional rule outside that core. ML007 and ML008 are post-v0.2 development
-rules, so neither is included in the stable v0.2.0 release.
+This v1 matrix lists 11 rules: nine ML rules and two ST rules. The v0.1 core
+comprises eight rules (ML001–ML006 and ST001–ST002); ML009 is an additional
+rule outside that core. ML007 and ML008 were added after v0.2.0 and are included
+in v1.0.0.
 
 | Rule ID | Name | Severity | Confidence | Primary API family | Status |
 | --- | --- | --- | --- | --- | --- |
-| ML001 | Pre-split scaler fit | warning | medium | `sklearn.preprocessing` | v0.1 core |
-| ML002 | Pre-split imputer fit | warning | medium | `sklearn.impute` | v0.1 core |
-| ML003 | Pre-split feature selection | warning | medium | `sklearn.feature_selection` | v0.1 core |
-| ML004 | Fit on an explicit test set | warning | medium | sklearn estimators and `train_test_split` | v0.1 core |
-| ML005 | Training-only evaluation | warning | medium | sklearn estimator `.score()` | v0.1 core |
-| ML006 | Random split without a fixed seed | info | high | `train_test_split` | v0.1 core |
-| ML007 | Test data used for model selection | warning | medium | sklearn `GridSearchCV` / `RandomizedSearchCV` | post-v0.2 development |
-| ML008 | Preprocessing fitted separately on train and test | warning | medium | sklearn preprocessing | post-v0.2 development |
-| ML009 | Preprocessing leakage before cross-validation | warning | medium | sklearn preprocessing and CV APIs | additional rule |
-| ST001 | Repeated tests without observed correction | warning | medium | resolved `scipy.stats` tests | v0.1 core |
-| ST002 | Discarded statistical test result | info | high | resolved `scipy.stats` tests | v0.1 core |
+| ML001 | Pre-split scaler fit | warning | medium | `sklearn.preprocessing` | v1 / v0.1 core |
+| ML002 | Pre-split imputer fit | warning | medium | `sklearn.impute` | v1 / v0.1 core |
+| ML003 | Pre-split feature selection | warning | medium | `sklearn.feature_selection` | v1 / v0.1 core |
+| ML004 | Fit on an explicit test set | warning | medium | sklearn estimators and `train_test_split` | v1 / v0.1 core |
+| ML005 | Training-only evaluation | warning | medium | sklearn estimator `.score()` | v1 / v0.1 core |
+| ML006 | Random split without a fixed seed | info | high | `train_test_split` | v1 / v0.1 core |
+| ML007 | Test data used for model selection | warning | medium | sklearn `GridSearchCV` / `RandomizedSearchCV` | v1 |
+| ML008 | Preprocessing fitted separately on train and test | warning | medium | sklearn preprocessing | v1 |
+| ML009 | Preprocessing leakage before cross-validation | warning | medium | sklearn preprocessing and CV APIs | v1 / additional rule |
+| ST001 | Repeated tests without observed correction | warning | medium | resolved `scipy.stats` tests | v1 / v0.1 core |
+| ST002 | Discarded statistical test result | info | high | resolved `scipy.stats` tests | v1 / v0.1 core |
 
 See [rule documentation](docs/) for supported patterns, evidence categories,
 and limitations.
@@ -124,13 +122,13 @@ cells or analyze stored outputs. Document order does not establish historical
 kernel execution order, and cross-cell data flow is not modeled. A clean scan
 does not establish that a Notebook or analysis is statistically correct.
 
-## Install v0.2.0
+## Install v1.0.0
 
 Requires Python 3.11+. CI covers Python 3.11–3.14 on Windows and Linux.
 StatGuard is not published to PyPI. Install the tagged source:
 
 ```text
-git clone --branch v0.2.0 --depth 1 https://github.com/hyynb666/statguard.git
+git clone --branch v1.0.0 --depth 1 https://github.com/hyynb666/statguard.git
 cd statguard
 python -m pip install .
 statguard --help
@@ -139,7 +137,7 @@ python -m statguard --version
 ```
 
 Alternatively, download the wheel attached to the
-[v0.2.0 GitHub Release](https://github.com/hyynb666/statguard/releases/tag/v0.2.0)
+[v1.0.0 GitHub Release](https://github.com/hyynb666/statguard/releases/tag/v1.0.0)
 and install it with `python -m pip install <wheel-path>`.
 
 Activate the environment first, or on Windows run
@@ -188,7 +186,7 @@ Findings. See [reporting](docs/reporting.md) and the
 [HTML report guide](docs/html-report.md). Scanning continues through other
 files and valid Notebook cells.
 
-### Inline Finding suppression (development main)
+### Inline Finding suppression
 
 Use an explicit rule ID to suppress one Finding on the comment's physical line:
 
@@ -207,8 +205,9 @@ Directives are parsed from Python comment tokens. They do not affect detection,
 and do not support wildcard, file-wide, or block suppression. Malformed or
 unknown IDs are no-ops. Notebook directives apply only within the same code
 cell. All reporters, summaries, and `--fail-on` use the filtered Finding set;
-parse/rule errors and notices remain visible. This capability is not part of
-the stable v0.2.0 tag; see [inline suppression details](docs/suppressions.md).
+parse/rule errors and notices remain visible. This capability is included in
+the v1.0.0 compatibility contract; see [inline suppression details](docs/suppressions.md) and the
+[v1 compatibility policy](docs/compatibility.md).
 
 Exit codes:
 
@@ -238,7 +237,7 @@ discovery, and GitHub Action details.
 
 ## GitHub Action
 
-StatGuard can run as a GitHub Actions step from the v0.2.0 release tag:
+StatGuard can run as a GitHub Actions step from the v1.0.0 release tag:
 
 ```yaml
 jobs:
@@ -246,7 +245,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: hyynb666/statguard@v0.2.0
+      - uses: hyynb666/statguard@v1.0.0
         with:
           path: .
 ```
@@ -256,7 +255,7 @@ report for a workflow to upload, use `format: html` and
 `output: statguard-report.html`, then add your own
 `actions/upload-artifact@v4` step. The Action does not upload artifacts.
 
-StatGuard v0.2.0 is the first stable tagged release containing the Composite
+StatGuard v1.0.0 is the current stable tagged release containing the Composite
 Action. `@main` continues to track development and may change. See
 [GitHub Action documentation](docs/github-action.md) for inputs, exclusions,
 report formats, and security details.
@@ -317,7 +316,7 @@ See also the [Code of Conduct](CODE_OF_CONDUCT.md), [Security Policy](SECURITY.m
 [v0.1 release audit](docs/release-audit-v0.1.md),
 [v0.2 release audit](docs/release-audit-v0.2.md), and
 [v0.2 release checklist](docs/release-checklist-v0.2.md), the [v1.0 release
-audit](docs/release-audit-v1.0.md), and the [v1.0 compatibility policy](docs/compatibility.md).
+audit](docs/release-audit-v1.0.md), and the [v1 compatibility policy](docs/compatibility.md).
 StatGuard is not published to PyPI; install from the tagged source or the
 GitHub Release wheel.
 

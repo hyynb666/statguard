@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: hyynb666/statguard@v0.2.0
+      - uses: hyynb666/statguard@v1.0.0
         with:
           path: .
           format: sarif
@@ -87,7 +87,7 @@ the upload to execute; the final step restores a failing job status:
       - name: Scan with StatGuard
         id: statguard
         continue-on-error: true
-        uses: hyynb666/statguard@v0.2.0
+        uses: hyynb666/statguard@v1.0.0
         with:
           path: .
           format: sarif
