@@ -304,6 +304,7 @@ def test_default_registry_and_rule_disabling_are_independent():
         "ML004",
         "ML005",
         "ML006",
+        "ML007",
         "ML009",
         "ST001",
         "ST002",

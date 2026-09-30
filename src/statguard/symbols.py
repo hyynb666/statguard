@@ -88,6 +88,20 @@ def _unknown(node: ast.AST, reason: str) -> SymbolValue:
     return SymbolValue(ValueKind.UNKNOWN, node, reason=reason)
 
 
+def _is_static_literal(node: ast.expr) -> bool:
+    """Recognize constant-only containers whose evaluation has no user effects."""
+    if isinstance(node, ast.Constant):
+        return True
+    if isinstance(node, (ast.Tuple, ast.List, ast.Set)):
+        return all(_is_static_literal(item) for item in node.elts)
+    if isinstance(node, ast.Dict):
+        return all(
+            key is not None and _is_static_literal(key) and _is_static_literal(value)
+            for key, value in zip(node.keys, node.values, strict=True)
+        )
+    return False
+
+
 def _written_names(node: ast.AST) -> set[str]:
     """Names that may be rebound, without entering nested function/class bodies."""
     result: set[str] = set()
@@ -208,6 +222,11 @@ class _Tracker:
                 else _unknown(node, "Unbound or external name")
             )
         elif isinstance(node, ast.Constant):
+            value = SymbolValue(ValueKind.LITERAL, node)
+        elif _is_static_literal(node):
+            # Constant-only containers cannot call user code or mutate bindings.
+            # Keeping them known lets rules reason about adjacent APIs without
+            # treating ordinary parameter grids as an opaque side effect.
             value = SymbolValue(ValueKind.LITERAL, node)
         elif isinstance(node, ast.Attribute):
             base = self._expr(node.value, env, scope)

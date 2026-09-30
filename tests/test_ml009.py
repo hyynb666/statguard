@@ -612,6 +612,7 @@ def test_rule_is_default_registered_but_individually_selectable():
         "ML004",
         "ML005",
         "ML006",
+        "ML007",
         "ML009",
         "ST001",
         "ST002",

@@ -45,6 +45,12 @@ ESTIMATOR_PATHS = frozenset(
         "sklearn.ensemble.RandomForestRegressor",
     }
 )
+MODEL_SELECTION_SEARCH_PATHS = frozenset(
+    {
+        "sklearn.model_selection.GridSearchCV",
+        "sklearn.model_selection.RandomizedSearchCV",
+    }
+)
 
 
 def split_inputs(value: SymbolValue) -> tuple[ast.expr, ...] | None:
@@ -106,6 +112,52 @@ def estimator_fit_inputs(
         (name, value)
         for name, value in (("features", features), ("labels", labels))
         if value is not None
+    )
+
+
+def model_selection_fit_inputs(
+    callee: SymbolValue, call: ast.Call
+) -> tuple[tuple[str, ast.expr], ...] | None:
+    """Return unambiguous X/y inputs for a supported search object's ``fit``.
+
+    Additional named metadata (for example ``groups`` or ``sample_weight``) is
+    intentionally ignored. Starred and expanded keyword arguments obscure the
+    input roles and therefore make the call unsupported.
+    """
+    method = callee.origin
+    if method.kind is not ValueKind.ATTRIBUTE or method.attribute != "fit" or method.base is None:
+        return None
+    search = method.base.origin
+    if (
+        search.kind is not ValueKind.CALL
+        or search.callee.qualified_name not in MODEL_SELECTION_SEARCH_PATHS
+    ):
+        return None
+    if len(call.args) > 2 or any(isinstance(arg, ast.Starred) for arg in call.args):
+        return None
+
+    names = [keyword.arg for keyword in call.keywords]
+    if any(name is None for name in names) or len(set(names)) != len(names):
+        return None
+    if (call.args and "X" in names) or (len(call.args) > 1 and "y" in names):
+        return None
+
+    features = (
+        call.args[0]
+        if call.args
+        else next((keyword.value for keyword in call.keywords if keyword.arg == "X"), None)
+    )
+    labels = (
+        call.args[1]
+        if len(call.args) > 1
+        else next((keyword.value for keyword in call.keywords if keyword.arg == "y"), None)
+    )
+    if features is None:
+        return None
+    return tuple(
+        (name, expression)
+        for name, expression in (("features", features), ("labels", labels))
+        if expression is not None
     )
 
 

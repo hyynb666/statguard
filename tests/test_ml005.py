@@ -208,6 +208,7 @@ def test_pipeline_and_ml009_rule_identity_remain_separate():
         "ML004",
         "ML005",
         "ML006",
+        "ML007",
         "ML009",
         "ST001",
         "ST002",

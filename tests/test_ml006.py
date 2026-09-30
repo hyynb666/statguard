@@ -297,6 +297,7 @@ def test_default_registry_contains_one_independently_disableable_ml006():
         "ML004",
         "ML005",
         "ML006",
+        "ML007",
         "ML009",
         "ST001",
         "ST002",

@@ -148,6 +148,12 @@ same-instance, same-fit, same-split held-out `score` was observed in the
 supported scope. Unknown scoring inputs, unresolved model escapes, and
 unsupported estimator state changes cause conservative abstention.
 
+ML007 consumes the existing `test` roles for exact
+`GridSearchCV`/`RandomizedSearchCV` receiver instances and explicit `X`/`y`
+inputs to `.fit()`. It requires the associated `train_test_split` and search
+fit to be ordered in one supported scope. It does not add a model-selection
+provenance graph or infer manual tuning loops; see [ML007](ml007.md).
+
 ## Review robustness
 
 Provenance dependencies are materialized with an explicit postorder stack and
