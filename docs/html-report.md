@@ -1,63 +1,78 @@
-# HTML report
+# Offline HTML dashboard and report
 
-StatGuard can create a self-contained HTML rendering of a scan:
+Generate a standalone report with:
 
 ```text
 statguard check ./project --format html --output reports/scan.html
 ```
 
 The command creates missing parent directories, writes UTF-8, and refuses to
-overwrite any scanned input. Open the resulting file directly in a browser. It
-needs no account, API key, network connection, web server, or browser
-automation. With no `--output`, HTML is written to stdout; redirect it to a
-file if you want to keep it. Scan and write diagnostics stay on stderr, so they
-cannot corrupt the document.
+overwrite any scanned input. Open the result directly in a browser. It needs no
+account, API key, network connection, server, or browser automation. Without
+`--output`, HTML is written to stdout. Scan and write diagnostics stay on
+stderr, so they cannot corrupt the document.
 
-## Contents
+## Dashboard
 
-The page summarizes scanned files, findings, severity counts, enabled rules,
-and complete/partial/failed file totals. Rule counts are derived from rules
-actually represented by findings. A per-file table displays file status,
-Finding count, and analysis errors. Each Finding shows its rule, severity,
-confidence, evidence category, path, source location (including Notebook
-`cell_index` where applicable), message, risk explanation, and suggestion.
-Parser/rule errors and Notebook or scanner notices are shown separately. When
-there are no findings, the report says that no issue was confirmed by supported
-rules; it does not claim that the code is safe.
+The overview shows scanned files, total findings, error/warning/info finding
+counts, complete/partial/failed files, analysis errors, and notices. Severity
+distribution uses native progress bars with visible labels and numeric counts.
+Rule overview includes count, share of all findings, and a progress bar; rows
+are sorted by count descending and Rule ID ascending. When there are no
+findings, it displays “No rule findings” without dividing by zero. A single
+finding has a 100% share.
 
-The page uses semantic HTML, local CSS, and one fixed inline filtering script.
-The script enables rule and severity selectors plus a case-insensitive search
-over each Finding's path, rule ID, and message. Filters combine, the visible
-count is shown against the total, and a no-match message appears when needed.
-The choices are derived from the Findings in that report. Each Finding uses a
-native, initially collapsed `<details>` element so all fields remain readable
-and expandable when JavaScript is disabled. Without JavaScript, the filters
-are inert and every Finding is still present.
+File overview keeps file, status, findings, and analysis errors, and adds
+per-file error, warning, and info finding counts. It is built only from the
+scan report; the Reporter does not reopen files. Partial and failed inputs
+remain visible and are not treated as clean files.
 
-The inline script is static code, not generated from report content. A CSP
-`script-src` SHA-256 hash permits only that exact script; it does not enable
-`unsafe-inline` scripts. The script reads escaped DOM text and updates the
-`hidden` property and `textContent`; it does not insert HTML or construct code.
-The layout wraps long paths and text and adapts to narrower screens. Severity
-labels include words as well as color.
+Finding cards show Rule ID, severity, confidence, path and location, message,
+evidence, risk explanation, and suggested action. Notebook locations display
+the original cell index and the one-based line/column within that code cell;
+they are not line numbers in the raw `.ipynb` JSON. Notebook document order
+does not establish historical execution order.
 
-## Privacy and analysis limits
+## Finding navigation
 
-All report fields are escaped before insertion into HTML. Paths are displayed
-as text rather than links. The page has no remote resources; its only active
-content is the fixed, CSP-pinned filter script.
-Analyzed Python is parsed but never imported or executed. Notebook code cells
-are analyzed by the existing static parser; stored outputs, HTML, images, and
-execution results are not passed to the Analyzer or embedded in the report.
-Notebook cells are treated independently and document order does not prove
-historical execution order.
+The filters combine Rule, Severity, Confidence, File, and case-insensitive
+search. Rule, confidence, and file options are derived from findings present in
+the report; file choices are sorted by path. Search covers path, Rule ID,
+message, explanation, suggestion, evidence category, and confidence. Filtering
+changes visibility but does not reorder findings. “Showing X of Y findings”
+updates as controls change and a no-match message appears when none remain.
+“Clear filters” restores all selectors and the search box. “Expand visible” and
+“Collapse visible” operate on the currently visible cards only. The controls
+have associated labels and use native buttons/selects/inputs.
 
-The report represents only the scan and enabled rules. A partial or failed
-file remains visibly marked and has its parse/rule errors listed. Static rules
-cover only documented patterns; no finding does not establish statistical
-correctness or absence of leakage. `--disable-rule RULE_ID` changes which
-rules run and therefore which findings are reported. Warnings do not fail the
-command by default; `--fail-on warning` exits 1 when the threshold is reached.
-The HTML file is written before threshold-based exit status is returned.
-Invalid input, analysis errors, or report write failures retain the CLI's exit
-code 2 behavior.
+With JavaScript disabled, the dashboard, tables, and every finding remain in
+the document; each finding can still be opened with its native `<details>`
+control. Only filtering, search, and bulk expand/collapse require JavaScript.
+No filter state is placed in the URL, browser storage, cookies, or a report
+history.
+
+## Security, privacy, and scope
+
+The page is a self-contained offline document with inline CSS and one fixed
+inline interaction script. The Content Security Policy keeps
+`default-src 'none'` and permits only that script's SHA-256 hash. The script
+reads Finding metadata from escaped `data-*` attributes and changes safe DOM
+properties; it does not evaluate strings or insert HTML. Every report value,
+including attribute values, is HTML-escaped. There are no remote resources,
+network requests, chart libraries, or runtime dependencies. The report has no
+source snippets and paths are text, not links.
+
+The Reporter only renders `ScanReport`; it does not rescan, analyze, or execute
+source. Python is parsed but never imported or executed. Notebook code is
+analyzed by the existing parser; outputs, HTML, images, and execution results
+are not passed to the Analyzer or embedded in the report. Inline suppressions
+have already been applied by Analyzer, so the HTML report naturally contains
+only the Findings that remain in `ScanReport`; it does not parse suppression
+comments or calculate a suppressed count.
+
+Errors and notices have their own section and are not hidden by Finding
+filters. No Finding does not establish statistical correctness or absence of
+risk. The HTML file is written before any configured Finding threshold affects
+the CLI exit code; invalid input, analysis errors, or report write failures
+retain exit code 2. See [the report contract](reporting.md) for JSON, SARIF,
+and exit behavior.

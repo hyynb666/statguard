@@ -135,7 +135,7 @@ jobs:
           REPORT_PATH: build/action-smoke/report.html
         shell: bash
         run: |
-          python -c "import os; report = open(os.environ['REPORT_PATH'], encoding='utf-8').read(); assert 'ML001' in report and 'Content-Security-Policy' in report"
+          python -c "import os; report = open(os.environ['REPORT_PATH'], encoding='utf-8').read(); assert all(value in report for value in ('StatGuard Analysis Report', 'Content-Security-Policy', 'ML001', 'confidence-filter', 'file-filter', 'Expand visible', 'Rule overview', 'data-search='))"
 
       - name: Write a SARIF report
         uses: ./

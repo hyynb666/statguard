@@ -116,7 +116,10 @@ Test file/Notebook/directory scans, exclusions, empty inputs, explicit errors,
 exit codes, output writes, HTML escaping, and no-execution behavior with test-only
 rules. HTML dynamic content must always be escaped; interactive scripts must
 be fixed code pinned by a CSP hash and must not interpolate report content.
-Do not add remote resources or render Notebook outputs.
+Keep HTML output deterministic, self-contained, readable without JavaScript,
+and free of source snippets, remote resources, browser storage, and Notebook
+outputs. Escape dynamic text and attributes; update the CSP hash whenever the
+fixed script changes. See the [HTML report guide](docs/html-report.md).
 Review any proposed JSON schema or exit-code change before release.
 
 SARIF additions should follow [the SARIF contract](docs/sarif.md): keep it a

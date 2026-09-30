@@ -66,12 +66,15 @@ order does not establish historical execution order.
 
 Console diagnostics show the same Finding fields as JSON, including evidence,
 risk and fix. All report formats include scan errors and notices. HTML is a
-standalone offline document with a restrictive Content Security Policy and
-local CSS. It escapes every dynamic value, includes a fixed inline filter
-script pinned by its SHA-256 CSP hash, and displays paths as text. Findings use
-native collapsed details, so they remain readable without JavaScript. Notebook
-outputs are never passed into the reporter. See [the HTML report guide](html-report.md)
-for its interaction, security model, and limits.
+standalone offline dashboard with scan overview metrics, severity and rule
+distributions, and a per-file summary. Its Rule, severity, confidence, file,
+and search filters operate on stable Finding metadata without reordering
+cards. The page uses a restrictive Content Security Policy, local CSS, and a
+fixed inline filter script pinned by its SHA-256 CSP hash; all dynamic text and
+attributes are escaped. Findings use native collapsed details and remain
+readable without JavaScript. Notebook outputs are never passed into the
+reporter. See [the HTML report guide](html-report.md) for its interaction,
+security model, and limits.
 `--output` writes the selected format as UTF-8, creates missing parent
 directories, and refuses to replace a scanned input. A write failure returns 2
 and writes a short message to stderr. Without `--output`, JSON and SARIF stdout
